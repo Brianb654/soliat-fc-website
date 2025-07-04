@@ -1,0 +1,39 @@
+.league-container {
+  background-color: #f9f9f9;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  margin: 0 auto 2rem auto; /* center the container + space below */
+  max-width: 1000px; /* limit width for cleaner layout */
+}
+
+.league-container h2 {
+  color: #800000; /* Maroon heading */
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.league-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.league-table th {
+  background-color: #000080; /* Blue headers */
+  color: #ffffff;
+  padding: 0.5rem;
+}
+
+.league-table td {
+  padding: 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.league-table tr:nth-child(even) {
+  background-color: #f1f1f1;
+}
+
+.league-table tr:hover {
+  background-color: #e0e0e0;
+}
