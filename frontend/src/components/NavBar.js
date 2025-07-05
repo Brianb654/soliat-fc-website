@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './NavBar.css';
-import logo from '../assets/soliat-logo.jpg'; 
+import logo from '../assets/Soliat.jpg'; 
 
 const NavBar = () => {
   return (

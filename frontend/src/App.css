@@ -1,33 +1,37 @@
 .league-container {
   background-color: #f9f9f9;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
-  margin: 0 auto 2rem auto; /* center the container + space below */
-  max-width: 1000px; /* limit width for cleaner layout */
+  padding: 0.5rem;
+  border-radius: 6px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+  margin: 0 auto 1rem auto;
+  max-width: 900px; /* slightly narrower */
 }
 
 .league-container h2 {
-  color: #800000; /* Maroon heading */
+  color: #800000;
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem; /* smaller heading */
 }
 
 .league-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* equal column width */
+  font-size: 0.8rem; /* smaller text */
+}
+
+.league-table th,
+.league-table td {
+  padding: 0.25rem; /* tight padding */
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  word-wrap: break-word;
 }
 
 .league-table th {
-  background-color: #000080; /* Blue headers */
-  color: #ffffff;
-  padding: 0.5rem;
-}
-
-.league-table td {
-  padding: 0.5rem;
-  text-align: center;
-  border-bottom: 1px solid #ddd;
+  background-color: #000080;
+  color: #fff;
 }
 
 .league-table tr:nth-child(even) {
@@ -37,3 +41,4 @@
 .league-table tr:hover {
   background-color: #e0e0e0;
 }
+
