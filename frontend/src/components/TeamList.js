@@ -37,7 +37,8 @@ const TeamList = () => {
 
   useEffect(() => {
     axios.get('https://soliat-fc-backend-production.up.railway.app/api/teams')
-      .then(res => {
+   
+    .then(res => {
         const sortedTeams = res.data.sort((a, b) => {
           return a.name.localeCompare(b.name);  // Sort alphabetically
         });
