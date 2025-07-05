@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { postNews } from '../api/newsApi';  // adjust path if needed
 import './News.css';
 
 const NewsForm = () => {
@@ -15,7 +15,7 @@ const NewsForm = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:5000/api/news', { title, content, author });
+      await postNews({ title, content, author });
       setMessage('✅ News posted successfully');
       setTitle('');
       setContent('');
@@ -55,4 +55,3 @@ const NewsForm = () => {
 };
 
 export default NewsForm;
-
