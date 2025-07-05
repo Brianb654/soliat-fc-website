@@ -36,7 +36,7 @@ const TeamList = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    axios.get('https://soliat-fc-backend-production.up.railway.app/api/teams') // Update this to your actual backend URL
+    axios.get('https://soliat-fc-backend-production.up.railway.app/api/teams')
       .then(res => {
         const sortedTeams = res.data.sort((a, b) => {
           return a.name.localeCompare(b.name);  // Sort alphabetically
@@ -86,3 +86,4 @@ const TeamList = () => {
 };
 
 export default TeamList;
+
