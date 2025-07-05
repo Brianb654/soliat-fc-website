@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { postNews } from '../api/newsApi';  // adjust path if needed
+import { postNews } from '../api/newsApi';
 import './News.css';
 
 const NewsForm = () => {
@@ -20,8 +20,9 @@ const NewsForm = () => {
       setTitle('');
       setContent('');
       setAuthor('');
-    } catch {
-      setMessage('❌ Failed to post news');
+    } catch (error) {
+      console.error('Post news error:', error.response || error.message || error);
+      setMessage('❌ Failed to post news: ' + (error.response?.data?.message || 'Server error'));
     }
   };
 
