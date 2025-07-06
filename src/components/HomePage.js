@@ -46,24 +46,15 @@ const HomePage = () => {
     if (charIndex === fullText.length && !isDeleting) {
       const timeout = setTimeout(() => {
         setIsDeleting(true);
-      }, 1000); // pause at full text
+      }, 1000);
       return () => clearTimeout(timeout);
     }
 
     if (charIndex === 0 && isDeleting) {
-      // Switch text after deleting
       setIsDeleting(false);
       setCurrentTextIndex((prev) => (prev + 1) % texts.length);
     }
   }, [typedText, isDeleting, charIndex, currentTextIndex]);
-
-  // Reset typing when slide changes
-  useEffect(() => {
-    setTypedText('');
-    setCharIndex(0);
-    setIsDeleting(false);
-    setCurrentTextIndex(0);
-  }, [currentSlide]);
 
   return (
     <div className="home-container">
@@ -88,10 +79,39 @@ const HomePage = () => {
 
       <div className="welcome-card">
         <h1>Welcome to Soliat FC</h1>
-        <img src={team1} alt="Soliat FC team" />
+        <img src={team1} alt="Soliat FC team" className="welcome-image" />
         <p>
           Soliat Football Club — bringing the community together through football, passion, and talent.
+          Based in Ainabkoi, we compete in local and regional leagues, focusing on teamwork,
+          discipline, and excellence on and off the pitch.
         </p>
+      </div>
+
+      <div className="info-cards">
+        <div className="info-card">
+          <h2>🌟 Our Vision</h2>
+          <p>
+            To become a leading football club in the region, known for producing top talent,
+            promoting sportsmanship, and strengthening our community through football.
+          </p>
+        </div>
+        <div className="info-card">
+          <h2>🌟 Our Mission</h2>
+          <p>
+            Develop and support players of all ages. Compete at the highest level with integrity
+            and respect. Promote positive values through sport. Engage and uplift our community
+            through football initiatives.
+          </p>
+        </div>
+        <div className="info-card">
+          <h2>🌟 Get Involved</h2>
+          <p>
+            ✅ Join Soliat FC as a player.<br/>
+            ✅ Support the team at matches.<br/>
+            ✅ Become a sponsor or partner.<br/>
+            ✅ Follow us on social media for updates!
+          </p>
+        </div>
       </div>
     </div>
   );
