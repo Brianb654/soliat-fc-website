@@ -10,10 +10,11 @@ const NewsForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title || !content) {
+    if (!title.trim() || !content.trim()) {
       setMessage('❌ Title and content are required');
       return;
     }
+
     try {
       await postNews({ title, content, author });
       setMessage('✅ News posted successfully');
@@ -21,8 +22,8 @@ const NewsForm = () => {
       setContent('');
       setAuthor('');
     } catch (error) {
-      console.error('Post news error:', error.response || error.message || error);
-      setMessage('❌ Failed to post news: ' + (error.response?.data?.message || 'Server error'));
+      console.error('Post news error:', error);
+      setMessage('❌ Failed to post news: ' + (error.message || 'Server error'));
     }
   };
 
