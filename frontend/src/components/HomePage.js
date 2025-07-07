@@ -64,7 +64,7 @@ const HomePage = () => {
           {images.map((img, index) => (
             <div className="slide" key={index}>
               <img src={img} alt={`Slide ${index + 1}`} className="slider-image" />
-              <div className="slider-overlay"></div>
+              
             </div>
           ))}
         </div>
