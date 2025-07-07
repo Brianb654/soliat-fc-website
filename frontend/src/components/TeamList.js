@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import './TeamList.css';
 
 // Import team logos — match file names exactly as in src/assets/
 import AinabkoiLogo from '../assets/Ainabkoi.jpg';
