@@ -1,0 +1,105 @@
+.nav-container {
+  background-color: #800000; /* maroon */
+  padding: 1rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.logo-title {
+  display: flex;
+  align-items: center;
+}
+
+.soliat-logo {
+  width: 50px;
+  height: 50px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+}
+
+.soliat-navbar {
+  display: none; /* hide default horizontal nav on mobile */
+}
+
+.soliat-navbar ul {
+  list-style: none;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+}
+
+.soliat-navbar li a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.soliat-navbar li a:hover {
+  text-decoration: underline;
+}
+
+/* Hamburger icon */
+.hamburger {
+  cursor: pointer;
+  display: block;
+}
+
+/* Dropdown menu (mobile) */
+.dropdown-menu {
+  position: absolute;
+  top: 70px; /* below nav bar */
+  left: 0;
+  width: 100%;
+  background-color: #800000;
+  padding: 0.5rem 0;
+}
+
+.dropdown-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dropdown-menu li {
+  padding: 0.5rem 1rem;
+}
+
+.dropdown-menu a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  display: block;
+}
+
+.dropdown-menu a:hover {
+  background-color: #a00000; /* slightly lighter maroon on hover */
+}
+
+.donate-button {
+  background-color: yellow;
+  color: black !important;
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+/* Show full nav on larger screens */
+@media (min-width: 768px) {
+  .hamburger {
+    display: none;
+  }
+
+  .soliat-navbar {
+    display: block;
+  }
+
+  .dropdown-menu {
+    display: none; /* no dropdown on desktop */
+  }
+}
