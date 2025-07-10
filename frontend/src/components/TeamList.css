@@ -1,10 +1,13 @@
+/* 🎯 Container */
 .league-container {
   width: 90%;
-  max-width: 600px; /* Make table small and centered */
+  max-width: 600px;
   margin: 0 auto;
   padding: 1rem;
+  overflow-x: auto;
 }
 
+/* 🏆 Title */
 .league-container h2 {
   text-align: center;
   font-size: 1.7rem;
@@ -12,36 +15,97 @@
   margin-bottom: 0.5rem;
 }
 
+/* 📋 Table Base */
 .league-table {
   width: 100%;
   border-collapse: collapse;
   background-color: white;
   color: black;
+  table-layout: fixed;
+  word-wrap: break-word;
 }
 
+/* 🧱 Table Cells */
 .league-table th,
 .league-table td {
   border: 1px solid #ddd;
-  padding: 6px; /* compact padding */
   text-align: center;
-  font-size: 0.9rem; /* smaller text for compact fit */
+  font-size: 1.05rem; /* ✅ Increased text size */
+  padding: 10px 8px;  /* ✅ Increased cell padding */
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
+/* 🟦 Table Header */
 .league-table th {
-  background-color: #004aad; /* blue header */
+  background-color: #004aad;
   color: white;
+  font-size: 1.1rem;  /* ✅ Slightly larger header text */
+  padding: 12px 8px;  /* ✅ More space for header row */
 }
 
+/* Make 'Pos' Column Smaller */
+.league-table th:first-child,
+.league-table td:first-child {
+  width: 40px;
+}
+
+/* ♻️ Alternating Rows */
 .league-table tr:nth-child(even) {
   background-color: #f2f2f2;
 }
 
+/* ✨ Hover Effect */
 .league-table tr:hover {
   background-color: #ddd;
 }
 
+/* ❗ Error Message */
 .error {
   color: red;
   text-align: center;
   margin-bottom: 1rem;
+}
+
+/* 📱 Mobile Responsiveness */
+@media (max-width: 600px) {
+  .league-table th,
+  .league-table td {
+    font-size: 0.85rem;
+    padding: 6px;
+    max-width: 100px;
+  }
+
+  .league-container h2 {
+    font-size: 1.3rem;
+  }
+
+  .league-table th:first-child,
+  .league-table td:first-child {
+    width: 30px;
+  }
+}
+
+/* 🧍 Team name and logo alignment */
+.team-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-start;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.team-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Limit Team Column Width */
+.league-table td:nth-child(2),
+.league-table th:nth-child(2) {
+  max-width: 200px;
 }

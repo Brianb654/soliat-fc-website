@@ -91,3 +91,11 @@
     display: block;
   }
 }
+
+.logout-button {
+  background-color: transparent;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-weight: bold;
+}

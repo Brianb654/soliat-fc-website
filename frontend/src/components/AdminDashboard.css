@@ -1,0 +1,22 @@
+.admin-dashboard {
+  padding: 20px;
+}
+
+.admin-dashboard h2 {
+  margin-bottom: 15px;
+}
+
+.admin-dashboard ul {
+  list-style: none;
+  padding: 0;
+}
+
+.admin-dashboard li {
+  margin: 10px 0;
+}
+
+.admin-dashboard a {
+  text-decoration: none;
+  font-weight: bold;
+  color: #0077cc;
+}

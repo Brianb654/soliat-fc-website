@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const News = require('../models/News');
+const { protect, isEditorOrAdmin, isAdmin } = require('../middleware/authMiddleware');
 
-// GET news with pagination
+// ✅ GET all news (paginated)
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -20,7 +21,7 @@ router.get('/', async (req, res) => {
       news: newsList,
       total,
       page,
-      pages: Math.ceil(total / limit)
+      pages: Math.ceil(total / limit),
     });
   } catch (err) {
     console.error('❌ Error fetching news:', err);
@@ -28,8 +29,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST a new news article
-router.post('/', async (req, res) => {
+// ✅ POST news (admin/editor only)
+router.post('/', protect, isEditorOrAdmin, async (req, res) => {
   try {
     const { title, content, author } = req.body;
 
@@ -40,7 +41,7 @@ router.post('/', async (req, res) => {
     const news = new News({
       title: title.trim(),
       content: content.trim(),
-      author: author ? author.trim() : undefined
+      author: (author || req.user?.name || 'Unknown').trim(),
     });
 
     const savedNews = await news.save();
@@ -51,8 +52,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// DELETE news by ID
-router.delete('/:id', async (req, res) => {
+// ✅ DELETE news (admin only)
+router.delete('/:id', protect, isAdmin, async (req, res) => {
   try {
     const deletedNews = await News.findByIdAndDelete(req.params.id);
     if (!deletedNews) {
@@ -65,16 +66,17 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// PUT (edit) news by ID
-router.put('/:id', async (req, res) => {
+// ✅ UPDATE news (admin/editor only)
+router.put('/:id', protect, isEditorOrAdmin, async (req, res) => {
   try {
     const { title, content, author } = req.body;
+
     const updatedNews = await News.findByIdAndUpdate(
       req.params.id,
       {
-        title: title?.trim(),
-        content: content?.trim(),
-        author: author?.trim()
+        ...(title && { title: title.trim() }),
+        ...(content && { content: content.trim() }),
+        ...(author && { author: author.trim() }),
       },
       { new: true, runValidators: true }
     );

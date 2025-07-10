@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { postNews } from '../api/newsApi';
+import axios from 'axios';
 import './News.css';
 
 const NewsForm = () => {
@@ -10,20 +10,41 @@ const NewsForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const token = localStorage.getItem('authToken'); // ✅ consistent with AdminLogin
+    if (!token) {
+      setMessage('❌ You must be logged in to post news.');
+      return;
+    }
+
     if (!title.trim() || !content.trim()) {
       setMessage('❌ Title and content are required');
       return;
     }
 
     try {
-      await postNews({ title, content, author });
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/news`, // ✅ dynamic backend
+        { title, content, author },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
       setMessage('✅ News posted successfully');
       setTitle('');
       setContent('');
       setAuthor('');
     } catch (error) {
-      console.error('Post news error:', error);
-      setMessage('❌ Failed to post news: ' + (error.message || 'Server error'));
+      console.error('❌ Post news error:', error);
+      const errMsg =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        'Server error';
+      setMessage('❌ Failed to post news: ' + errMsg);
     }
   };
 
@@ -37,19 +58,19 @@ const NewsForm = () => {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Title"
-        /><br/>
+        /><br />
         <textarea
           className="news-textarea"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Content"
-        ></textarea><br/>
+        ></textarea><br />
         <input
           className="news-input"
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
           placeholder="Author (optional)"
-        /><br/>
+        /><br />
         <button className="news-button" type="submit">Post</button>
       </form>
     </div>

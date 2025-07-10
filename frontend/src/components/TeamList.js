@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './TeamList.css';
 
-// Import team logos — match file names exactly as in src/assets/
+// Import team logos
 import AinabkoiLogo from '../assets/Ainabkoi.jpg';
 import ArangaiLogo from '../assets/Arangai.jpg';
 import DrysLogo from '../assets/Drys.jpg';
@@ -37,11 +37,11 @@ const TeamList = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    axios.get('https://soliat-fc-backend-production.up.railway.app/api/teams')
-   
-    .then(res => {
+    axios
+      .get('https://soliat-fc-backend-production.up.railway.app/api/teams')
+      .then(res => {
         const sortedTeams = res.data.sort((a, b) => {
-          return a.name.localeCompare(b.name);  // Sort alphabetically
+          return a.name.localeCompare(b.name); // Sort alphabetically
         });
         setTeams(sortedTeams);
       })
@@ -69,13 +69,13 @@ const TeamList = () => {
           {teams.map((team, index) => (
             <tr key={team._id}>
               <td>{index + 1}</td>
-              <td style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <td className="team-cell">
                 <img
                   src={logoMap[team.name] || 'https://via.placeholder.com/30'}
                   alt={`${team.name} logo`}
-                  style={{ width: '30px', height: '30px', borderRadius: '50%' }}
+                  className="team-logo"
                 />
-                {team.name}
+                <span>{team.name}</span>
               </td>
               <td>{team.points}</td>
               <td>{team.goalDifference}</td>
@@ -88,4 +88,3 @@ const TeamList = () => {
 };
 
 export default TeamList;
-
