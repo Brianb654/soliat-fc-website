@@ -20,7 +20,14 @@ const NavBar = () => {
     localStorage.removeItem('userInfo');
     setUser(null);
     navigate('/');
+
+    // ✅ Refresh the page after logout to reset UI
+    setTimeout(() => {
+      window.location.reload();
+    }, 200);
   };
+
+  const canPost = user?.role === 'admin' || user?.role === 'editor';
 
   return (
     <div className="nav-container">
@@ -39,19 +46,21 @@ const NavBar = () => {
           <li><Link to="/about">About</Link></li>
           <li><Link to="/donate" className="donate-button">Donate</Link></li>
 
-          {user?.role === 'admin' && (
-            <>
-              <li><Link to="/admin/dashboard">Dashboard</Link></li>
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="logout-button"
-                  style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}
-                >
-                  Logout
-                </button>
-              </li>
-            </>
+          {canPost && <li><Link to="/post-news">➕ Post News</Link></li>}
+          {user?.role === 'admin' && <li><Link to="/admin/dashboard">Dashboard</Link></li>}
+
+          {!user ? (
+            <li><Link to="/admin/login">🔐 Login</Link></li>
+          ) : (
+            <li>
+              <button
+                onClick={handleLogout}
+                className="logout-button"
+                style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}
+              >
+                🚪 Logout
+              </button>
+            </li>
           )}
         </ul>
       </nav>
@@ -74,22 +83,24 @@ const NavBar = () => {
             <li><Link to="/about" onClick={toggleMenu}>About</Link></li>
             <li><Link to="/donate" onClick={toggleMenu} className="donate-button">Donate</Link></li>
 
-            {user?.role === 'admin' && (
-              <>
-                <li><Link to="/admin/dashboard" onClick={toggleMenu}>Dashboard</Link></li>
-                <li>
-                  <button
-                    onClick={() => {
-                      toggleMenu();
-                      handleLogout();
-                    }}
-                    className="logout-button"
-                    style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
+            {canPost && <li><Link to="/post-news" onClick={toggleMenu}>➕ Post News</Link></li>}
+            {user?.role === 'admin' && <li><Link to="/admin/dashboard" onClick={toggleMenu}>Dashboard</Link></li>}
+
+            {!user ? (
+              <li><Link to="/admin/login" onClick={toggleMenu}>🔐 Login</Link></li>
+            ) : (
+              <li>
+                <button
+                  onClick={() => {
+                    toggleMenu();
+                    handleLogout();
+                  }}
+                  className="logout-button"
+                  style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer' }}
+                >
+                  🚪 Logout
+                </button>
+              </li>
             )}
           </ul>
         </nav>

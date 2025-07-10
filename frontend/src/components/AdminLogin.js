@@ -12,8 +12,8 @@ const AdminLogin = ({ onLogin }) => {
     e.preventDefault();
     setError('');
 
-    const loginUrl = `${process.env.REACT_APP_API_URL}/api/auth/login`;
-    console.log('🔍 Login URL:', loginUrl); // ✅ Add this line to confirm URL
+    const loginUrl = `${process.env.REACT_APP_API_URL}/api/admin/login`;
+    console.log('🔍 Login URL:', loginUrl);
 
     try {
       const res = await axios.post(loginUrl, { email, password });
@@ -22,11 +22,14 @@ const AdminLogin = ({ onLogin }) => {
       localStorage.setItem('authToken', res.data.token);
       localStorage.setItem('userInfo', JSON.stringify(res.data));
 
-      // ✅ Call login callback (if needed)
+      // ✅ Call login callback (if any)
       if (onLogin) onLogin(res.data);
 
-      // ✅ Redirect
+      // ✅ Redirect + Auto-refresh
       navigate('/admin/post-news');
+      setTimeout(() => {
+        window.location.reload(); // 🔁 Force reload to show admin-only UI
+      }, 300); // slight delay for smooth redirect
     } catch (err) {
       console.error('❌ Login error:', err);
       const msg = err.response?.data?.message || 'Unexpected login error';

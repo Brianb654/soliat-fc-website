@@ -11,7 +11,7 @@ const NewsForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const token = localStorage.getItem('authToken'); // ✅ consistent with AdminLogin
+    const token = localStorage.getItem('authToken');
     if (!token) {
       setMessage('❌ You must be logged in to post news.');
       return;
@@ -24,7 +24,7 @@ const NewsForm = () => {
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/news`, // ✅ dynamic backend
+        `${process.env.REACT_APP_API_URL}/api/news`,
         { title, content, author },
         {
           headers: {
@@ -35,9 +35,15 @@ const NewsForm = () => {
       );
 
       setMessage('✅ News posted successfully');
+
       setTitle('');
       setContent('');
       setAuthor('');
+
+      // ✅ Auto-refresh the page after short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000); // 1 second delay for smooth UX
     } catch (error) {
       console.error('❌ Post news error:', error);
       const errMsg =

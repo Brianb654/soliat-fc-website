@@ -17,12 +17,9 @@ const LeaguePage = () => (
   </div>
 );
 
-// News page
+// ✅ News page – Only show news list to public
 const NewsPage = () => (
   <div className="news-page-container">
-    <div className="news-form-wrapper">
-      <NewsForm />
-    </div>
     <div className="news-list-wrapper">
       <NewsList />
     </div>
@@ -96,7 +93,7 @@ function App() {
             }
           />
 
-          {/* ✅ New: Admin/editor-only Post News route */}
+          {/* 🔐 Admin/editor-only Post News route */}
           <Route
             path="/post-news"
             element={
