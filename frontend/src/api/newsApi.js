@@ -3,7 +3,7 @@ import axios from 'axios';
 // ✅ Correct Railway backend URL
 //onst API_URL = 'https://soliat-fc-backend-production.up.railway.app/api/news';
 // src/api.js or similar
-const API_BASE_URL = 'https://your-backend-service.onrender.com'; // NOT localhost
+const API_BASE_URL = 'https://soliat-fc-website.onrender.com'; // NOT localhost
 
 
 // POST news
