@@ -1,7 +1,7 @@
 /* 🎯 Container */
 .league-container {
-  width: 90%;
-  max-width: 600px;
+  width: 100%;
+  max-width: 1000px; /* ✅ Allow wider layout on desktop */
   margin: 0 auto;
   padding: 1rem;
   overflow-x: auto;
@@ -21,7 +21,7 @@
   border-collapse: collapse;
   background-color: white;
   color: black;
-  table-layout: fixed;
+  table-layout: fixed; /* ✅ Better column width handling */
   word-wrap: break-word;
 }
 
@@ -29,19 +29,19 @@
 .league-table th,
 .league-table td {
   border: 1px solid #ddd;
-  text-align: center;
-  font-size: 1.05rem; /* ✅ Increased text size */
-  padding: 10px 8px;  /* ✅ Increased cell padding */
+  font-size: 1.05rem;
+  padding: 10px 8px;
   white-space: normal;
   overflow-wrap: break-word;
+  text-align: center;
 }
 
 /* 🟦 Table Header */
 .league-table th {
   background-color: #004aad;
   color: white;
-  font-size: 1.1rem;  /* ✅ Slightly larger header text */
-  padding: 12px 8px;  /* ✅ More space for header row */
+  font-size: 1.1rem;
+  padding: 12px 8px;
 }
 
 /* Make 'Pos' Column Smaller */
@@ -67,36 +67,19 @@
   margin-bottom: 1rem;
 }
 
-/* 📱 Mobile Responsiveness */
-@media (max-width: 600px) {
-  .league-table th,
-  .league-table td {
-    font-size: 0.85rem;
-    padding: 6px;
-    max-width: 100px;
-  }
-
-  .league-container h2 {
-    font-size: 1.3rem;
-  }
-
-  .league-table th:first-child,
-  .league-table td:first-child {
-    width: 30px;
-  }
-}
-
 /* 🧍 Team name and logo alignment */
 .team-cell {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   justify-content: flex-start;
-  overflow-wrap: anywhere;
-  white-space: normal;
   word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  text-align: left;
 }
 
+/* 🖼️ Team Logo */
 .team-logo {
   width: 28px;
   height: 28px;
@@ -104,8 +87,39 @@
   flex-shrink: 0;
 }
 
-/* Limit Team Column Width */
+/* 🎯 Wider Team Column */
 .league-table td:nth-child(2),
 .league-table th:nth-child(2) {
-  max-width: 200px;
+  width: 280px;
+  max-width: 100%;
+  text-align: left;
+}
+
+/* 📱 Mobile Responsiveness */
+@media (max-width: 600px) {
+  .league-container {
+    padding: 0.5rem;
+  }
+
+  .league-container h2 {
+    font-size: 1.3rem;
+  }
+
+  .league-table th,
+  .league-table td {
+    font-size: 0.85rem;
+    padding: 6px;
+    word-break: break-word;
+  }
+
+  .league-table td:nth-child(2),
+  .league-table th:nth-child(2) {
+    width: auto;
+    max-width: 150px;
+  }
+
+  .league-table th:first-child,
+  .league-table td:first-child {
+    width: 30px;
+  }
 }

@@ -1,0 +1,63 @@
+/* AdminLogin.css */
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0a192f; /* Dark football-themed blue */
+  padding: 20px;
+}
+
+.login-form {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.login-form h2 {
+  color: #0a192f;
+  margin-bottom: 20px;
+}
+
+.login-error {
+  color: red;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.login-input:focus {
+  border-color: #1e6091;
+  outline: none;
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #1e6091;
+  color: #fff;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #168aad;
+}

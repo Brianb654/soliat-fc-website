@@ -8,6 +8,7 @@ import NewsForm from './components/NewsForm';
 import NewsList from './components/NewsList';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
+import CreateEditorPage from './components/CreateEditorPage'; // ✅ NEW
 import './App.css';
 
 // League page
@@ -83,7 +84,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/admin/login" element={<AdminLogin onLogin={handleLogin} />} />
 
-          {/* 🔐 Admin-only route */}
+          {/* 🔐 Admin-only dashboard */}
           <Route
             path="/admin/dashboard"
             element={
@@ -93,7 +94,17 @@ function App() {
             }
           />
 
-          {/* 🔐 Admin/editor-only Post News route */}
+          {/* 🔐 Admin-only: Create new editor */}
+          <Route
+            path="/admin/create-editor"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <CreateEditorPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 🔐 Admin/editor-only Post News */}
           <Route
             path="/post-news"
             element={

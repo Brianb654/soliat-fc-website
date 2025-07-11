@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import './AdminLogin.css'; // 👈 Add this line
 
 const AdminLogin = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -18,18 +19,15 @@ const AdminLogin = ({ onLogin }) => {
     try {
       const res = await axios.post(loginUrl, { email, password });
 
-      // ✅ Save token & user info
       localStorage.setItem('authToken', res.data.token);
       localStorage.setItem('userInfo', JSON.stringify(res.data));
 
-      // ✅ Call login callback (if any)
       if (onLogin) onLogin(res.data);
 
-      // ✅ Redirect + Auto-refresh
       navigate('/admin/post-news');
       setTimeout(() => {
-        window.location.reload(); // 🔁 Force reload to show admin-only UI
-      }, 300); // slight delay for smooth redirect
+        window.location.reload();
+      }, 300);
     } catch (err) {
       console.error('❌ Login error:', err);
       const msg = err.response?.data?.message || 'Unexpected login error';
@@ -38,27 +36,29 @@ const AdminLogin = ({ onLogin }) => {
   };
 
   return (
-    <form onSubmit={loginHandler} style={{ maxWidth: '400px', margin: '2rem auto' }}>
-      <h2>🔐 Admin Login</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        style={{ display: 'block', width: '100%', marginBottom: '1rem' }}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        style={{ display: 'block', width: '100%', marginBottom: '1rem' }}
-      />
-      <button type="submit">Login</button>
-    </form>
+    <div className="login-container">
+      <form onSubmit={loginHandler} className="login-form">
+        <h2>🔐 Admin Login</h2>
+        {error && <p className="login-error">{error}</p>}
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="login-input"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="login-input"
+        />
+        <button type="submit" className="login-button">Login</button>
+      </form>
+    </div>
   );
 };
 
