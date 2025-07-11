@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './News.css';
 
+// ✅ Set backend URL explicitly
+const API_BASE_URL = 'https://soliat-fc-website.onrender.com/api/news';
+
 const NewsForm = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -24,7 +27,7 @@ const NewsForm = () => {
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/news`,
+        API_BASE_URL,
         { title, content, author },
         {
           headers: {
@@ -35,15 +38,13 @@ const NewsForm = () => {
       );
 
       setMessage('✅ News posted successfully');
-
       setTitle('');
       setContent('');
       setAuthor('');
 
-      // ✅ Auto-refresh the page after short delay
       setTimeout(() => {
         window.location.reload();
-      }, 1000); // 1 second delay for smooth UX
+      }, 1000);
     } catch (error) {
       console.error('❌ Post news error:', error);
       const errMsg =

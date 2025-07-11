@@ -6,9 +6,18 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
 
+// ✅ Enhanced CORS Setup
+const allowedOrigins = [
+  'http://localhost:3000', // local dev
+  'https://soliat-fc.vercel.app', // your frontend on Vercel
+];
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
+
 // ✅ Middleware
-app.use(cors());
-app.use(express.json()); // Make sure this is BEFORE all routes
+app.use(express.json()); // Parse JSON requests
 
 // ✅ MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
@@ -20,31 +29,32 @@ app.get('/', (req, res) => {
   res.send('Soliat FC Backend is running');
 });
 
+// 🧪 Quick test route
 app.post('/api/test', (req, res) => {
   console.log('🔍 Received test body:', req.body);
   res.json({ received: req.body });
 });
 
-
-// ✅ Routes
+// ✅ API Routes
 app.use('/api/teams', require('./routes/teamRoutes'));
 app.use('/api/matches', require('./routes/matchRoutes'));
 app.use('/api/news', require('./routes/newsRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));       // 🔐 Login/Register
 app.use('/api/admin', require('./routes/adminRoutes'));     // 🔐 Admin controls
 
-// ⚠️ Global Error Handler
+// ❗ Global Error Handler
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err.stack);
   res.status(500).json({ error: 'Something went wrong!' });
+});
+
+// ❗ 404 Handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 // ✅ Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
-});
-
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'Route not found' });
 });
