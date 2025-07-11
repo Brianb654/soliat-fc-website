@@ -12,6 +12,32 @@ const generateToken = (id, role) => {
   });
 };
 
+// ✅ TEMPORARY: Create initial admin (delete after first use)
+router.post('/register-admin', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'Admin already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: 'admin'
+    });
+
+    res.status(201).json({ message: '✅ Admin created successfully' });
+  } catch (err) {
+    console.error('Admin registration error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // ✅ Admin Login Route
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -53,10 +79,12 @@ router.post('/create-editor', protect, isAdmin, async (req, res) => {
 
   if (userExists) return res.status(400).json({ message: 'User already exists' });
 
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   const editor = await User.create({
     username,
     email,
-    password,
+    password: hashedPassword,
     role: 'editor',
   });
 
