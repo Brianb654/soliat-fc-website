@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './News.css';
 
-// ✅ Set backend URL explicitly
-const API_BASE_URL = 'https://soliat-fc-website.onrender.com/api/news';
+// ✅ Prefer environment variable (fallback to hardcoded if missing)
+const API_BASE_URL = `${process.env.REACT_APP_API_URL || 'https://soliat-fc-website.onrender.com'}/api/news`;
 
 const NewsForm = () => {
   const [title, setTitle] = useState('');

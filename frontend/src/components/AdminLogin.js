@@ -9,10 +9,10 @@ const AdminLogin = ({ onLogin }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // ✅ Check for missing environment variable
-  const BASE_URL = process.env.REACT_APP_API_URL;
-  if (!BASE_URL) {
-    console.error('❌ REACT_APP_API_URL is missing! Make sure it is set in your .env and Vercel settings.');
+  // ✅ Safe fallback for env variable
+  const BASE_URL = process.env.REACT_APP_API_URL || 'https://soliat-fc-website.onrender.com';
+  if (!process.env.REACT_APP_API_URL) {
+    console.warn('⚠️ Using fallback BASE_URL. Set REACT_APP_API_URL in .env and Vercel for clean setup.');
   }
 
   const loginHandler = async (e) => {
