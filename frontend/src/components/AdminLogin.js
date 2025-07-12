@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './AdminLogin.css'; // 👈 Add this line
+import './AdminLogin.css';
 
 const AdminLogin = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -9,11 +9,14 @@ const AdminLogin = ({ onLogin }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // ✅ Use VITE_API_URL for Vite apps
+  const BASE_URL = import.meta.env.VITE_API_URL;
+
   const loginHandler = async (e) => {
     e.preventDefault();
     setError('');
 
-    const loginUrl = `${process.env.REACT_APP_API_URL}/api/admin/login`;
+    const loginUrl = `${BASE_URL}/api/admin/login`;
     console.log('🔍 Login URL:', loginUrl);
 
     try {
@@ -42,6 +45,8 @@ const AdminLogin = ({ onLogin }) => {
         {error && <p className="login-error">{error}</p>}
         <input
           type="email"
+          id="email"
+          name="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -50,6 +55,8 @@ const AdminLogin = ({ onLogin }) => {
         />
         <input
           type="password"
+          id="password"
+          name="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -63,3 +70,4 @@ const AdminLogin = ({ onLogin }) => {
 };
 
 export default AdminLogin;
+
