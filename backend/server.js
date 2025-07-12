@@ -6,13 +6,25 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
 
-// ✅ Enhanced CORS Setup
-const allowedOrigins = [
-  'http://localhost:3000', // local dev
-  'https://soliat-fc.vercel.app', // your frontend on Vercel
-];
+// ✅ Improved CORS Setup to support Vercel previews
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // allow mobile apps, Postman, etc.
+
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://soliat-fc.vercel.app',
+    ];
+
+    // ✅ Allow any Vercel preview deployment
+    const isVercelPreview = origin.endsWith('.vercel.app');
+
+    if (allowedOrigins.includes(origin) || isVercelPreview) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
