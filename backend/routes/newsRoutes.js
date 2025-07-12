@@ -7,7 +7,7 @@ const { protect, isEditorOrAdmin, isAdmin } = require('../middleware/authMiddlew
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     const newsList = await News.find()
@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
 // ✅ POST news (admin/editor only)
 router.post('/', protect, isEditorOrAdmin, async (req, res) => {
   try {
-    const { title, content, author } = req.body;
+    const { title, content, author, image } = req.body;
 
     if (!title || !content) {
       return res.status(400).json({ error: 'Title and content are required' });
@@ -42,6 +42,7 @@ router.post('/', protect, isEditorOrAdmin, async (req, res) => {
       title: title.trim(),
       content: content.trim(),
       author: (author || req.user?.name || 'Unknown').trim(),
+      image,
     });
 
     const savedNews = await news.save();
@@ -49,6 +50,39 @@ router.post('/', protect, isEditorOrAdmin, async (req, res) => {
   } catch (err) {
     console.error('❌ Error saving news:', err);
     res.status(500).json({ error: 'Server error while saving news' });
+  }
+});
+
+// ✅ PUT/edit news (admin/editor only) — UPDATED IMAGE HANDLING
+router.put('/:id', protect, isEditorOrAdmin, async (req, res) => {
+  try {
+    const { title, content, author, image } = req.body;
+
+    const updatedFields = {
+      ...(title && { title: title.trim() }),
+      ...(content && { content: content.trim() }),
+      ...(author && { author: author.trim() }),
+    };
+
+    // ✅ Allow updating the image even if it's an empty string
+    if (image !== undefined) {
+      updatedFields.image = image;
+    }
+
+    const updatedNews = await News.findByIdAndUpdate(
+      req.params.id,
+      updatedFields,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedNews) {
+      return res.status(404).json({ error: 'News not found' });
+    }
+
+    res.json(updatedNews);
+  } catch (err) {
+    console.error('❌ Error updating news:', err);
+    res.status(500).json({ error: 'Server error while updating news' });
   }
 });
 
@@ -63,32 +97,6 @@ router.delete('/:id', protect, isAdmin, async (req, res) => {
   } catch (err) {
     console.error('❌ Error deleting news:', err);
     res.status(500).json({ error: 'Server error while deleting news' });
-  }
-});
-
-// ✅ UPDATE news (admin/editor only)
-router.put('/:id', protect, isEditorOrAdmin, async (req, res) => {
-  try {
-    const { title, content, author } = req.body;
-
-    const updatedNews = await News.findByIdAndUpdate(
-      req.params.id,
-      {
-        ...(title && { title: title.trim() }),
-        ...(content && { content: content.trim() }),
-        ...(author && { author: author.trim() }),
-      },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedNews) {
-      return res.status(404).json({ error: 'News not found' });
-    }
-
-    res.json(updatedNews);
-  } catch (err) {
-    console.error('❌ Error updating news:', err);
-    res.status(500).json({ error: 'Server error while updating news' });
   }
 });
 

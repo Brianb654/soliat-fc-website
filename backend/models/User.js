@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'editor', 'viewer'],
     default: 'viewer'
   }
-});
+}, { timestamps: true });
 
 // 🔐 Hash password before saving
 userSchema.pre('save', async function (next) {
@@ -42,5 +42,5 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+// ✅ Prevent OverwriteModelError during hot reload
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

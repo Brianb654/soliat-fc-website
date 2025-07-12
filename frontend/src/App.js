@@ -8,7 +8,9 @@ import NewsForm from './components/NewsForm';
 import NewsList from './components/NewsList';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
-import CreateEditorPage from './components/CreateEditorPage'; // ✅ NEW
+import AdminUsers from './components/AdminUsers';
+import CreateEditorPage from './components/CreateEditorPage';
+import About from './components/About'; // ✅ Properly used now
 import './App.css';
 
 // League page
@@ -24,17 +26,6 @@ const NewsPage = () => (
     <div className="news-list-wrapper">
       <NewsList />
     </div>
-  </div>
-);
-
-// About page
-const AboutPage = () => (
-  <div className="main-content">
-    <h2>About Soliat FC</h2>
-    <p>
-      Soliat FC is a local football club dedicated to nurturing talent
-      and bringing the community together through sports.
-    </p>
   </div>
 );
 
@@ -81,8 +72,9 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/league" element={<LeaguePage />} />
           <Route path="/news" element={<NewsPage />} />
-          <Route path="/about" element={<AboutPage />} />
+          <Route path="/about" element={<About />} />
           <Route path="/admin/login" element={<AdminLogin onLogin={handleLogin} />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
 
           {/* 🔐 Admin-only dashboard */}
           <Route

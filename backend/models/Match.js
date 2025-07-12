@@ -8,4 +8,5 @@ const matchSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Match', matchSchema);
+// ✅ Fix OverwriteModelError
+module.exports = mongoose.models.Match || mongoose.model('Match', matchSchema);
