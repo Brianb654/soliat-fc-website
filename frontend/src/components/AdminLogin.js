@@ -9,8 +9,11 @@ const AdminLogin = ({ onLogin }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // ✅ Use VITE_API_URL for Vite apps
-  const BASE_URL = import.meta.env.VITE_API_URL;
+  // ✅ Check for missing environment variable
+  const BASE_URL = process.env.REACT_APP_API_URL;
+  if (!BASE_URL) {
+    console.error('❌ REACT_APP_API_URL is missing! Make sure it is set in your .env and Vercel settings.');
+  }
 
   const loginHandler = async (e) => {
     e.preventDefault();
@@ -45,8 +48,6 @@ const AdminLogin = ({ onLogin }) => {
         {error && <p className="login-error">{error}</p>}
         <input
           type="email"
-          id="email"
-          name="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -55,8 +56,6 @@ const AdminLogin = ({ onLogin }) => {
         />
         <input
           type="password"
-          id="password"
-          name="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -70,4 +69,3 @@ const AdminLogin = ({ onLogin }) => {
 };
 
 export default AdminLogin;
-
