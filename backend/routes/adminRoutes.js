@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../models/User'); // ✅ Still correct
 const { protect, isAdmin } = require('../middleware/authMiddleware');
 
 // 🔐 Generate JWT
@@ -22,12 +21,10 @@ router.post('/register-admin', async (req, res) => {
       return res.status(400).json({ message: 'Admin already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password, // 🔁 No need to hash manually — model handles it
       role: 'admin',
     });
 
@@ -38,16 +35,25 @@ router.post('/register-admin', async (req, res) => {
   }
 });
 
-// ✅ Admin Login
+// ✅ Admin & Editor Login with logs
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+  console.log('🔐 Trying to log in:', email);
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: 'Invalid email or password' });
+    if (!user) {
+      console.log('❌ Email not found in DB:', email);
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid email or password' });
+    const isMatch = await user.matchPassword(password); // ✅ Use method in model
+    if (!isMatch) {
+      console.log('❌ Password did not match for:', email);
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    console.log('✅ Login successful for:', user.email, '| Role:', user.role);
 
     const token = generateToken(user._id, user.role);
 
@@ -72,7 +78,6 @@ router.get('/test', (req, res) => {
 router.post('/create-editor', protect, isAdmin, async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
     console.log('➡️ Creating editor with:', { name, email });
 
     if (!name || !email || !password) {
@@ -84,12 +89,10 @@ router.post('/create-editor', protect, isAdmin, async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const editor = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password, // ✅ Let model hash it
       role: 'editor',
     });
 

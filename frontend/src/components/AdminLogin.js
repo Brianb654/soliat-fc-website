@@ -7,9 +7,9 @@ const AdminLogin = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Safe fallback for env variable
   const BASE_URL = process.env.REACT_APP_API_URL || 'https://soliat-fc-website.onrender.com';
   if (!process.env.REACT_APP_API_URL) {
     console.warn('⚠️ Using fallback BASE_URL. Set REACT_APP_API_URL in .env and Vercel for clean setup.');
@@ -18,6 +18,7 @@ const AdminLogin = ({ onLogin }) => {
   const loginHandler = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     const loginUrl = `${BASE_URL}/api/admin/login`;
     console.log('🔍 Login URL:', loginUrl);
@@ -38,6 +39,8 @@ const AdminLogin = ({ onLogin }) => {
       console.error('❌ Login error:', err);
       const msg = err.response?.data?.message || 'Unexpected login error';
       setError('❌ ' + msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,7 +65,18 @@ const AdminLogin = ({ onLogin }) => {
           required
           className="login-input"
         />
-        <button type="submit" className="login-button">Login</button>
+        <button
+          type="submit"
+          className="login-button"
+          disabled={loading}
+        >
+          {loading ? (
+            <span className="loading-wrapper">
+              <span className="ring-loader"></span>
+              Logging in...
+            </span>
+          ) : 'Login'}
+        </button>
       </form>
     </div>
   );

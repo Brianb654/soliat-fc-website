@@ -20,3 +20,32 @@
   font-weight: bold;
   color: #0077cc;
 }
+.admin-dashboard {
+  padding: 2rem;
+  max-width: 900px;
+  margin: auto;
+}
+
+.admin-dashboard form {
+  background-color: #f8f8f8;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.admin-dashboard input {
+  margin-bottom: 1rem;
+  padding: 10px;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.admin-dashboard button {
+  padding: 10px;
+  background-color: maroon;
+  color: white;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}

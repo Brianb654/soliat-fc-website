@@ -1,35 +1,60 @@
-/* AdminLogin.css */
+/* ===============================
+   ✨ Global Layout & Typography
+================================== */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
+/* ===============================
+   🟤 Login Container (Full Page)
+================================== */
 .login-container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #0a192f; /* Dark football-themed blue */
+  background: #0a192f; /* Dark football-themed background */
   padding: 20px;
 }
 
+/* ===============================
+   🧊 Glassmorphic Login Box
+================================== */
 .login-form {
-  background: #ffffff;
-  padding: 30px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  padding: 30px;
   max-width: 400px;
   width: 100%;
   text-align: center;
+  transform: translateY(-40px); /* Slight upward shift */
 }
 
 .login-form h2 {
-  color: #0a192f;
+  color: #800000; /* Maroon */
   margin-bottom: 20px;
 }
 
+/* ===============================
+   ⚠️ Error / Message Styling
+================================== */
 .login-error {
   color: red;
   margin-bottom: 15px;
   font-size: 14px;
 }
 
+/* ===============================
+   🧩 Form Inputs
+================================== */
 .login-input {
   width: 100%;
   padding: 12px 15px;
@@ -42,14 +67,17 @@
 }
 
 .login-input:focus {
-  border-color: #1e6091;
+  border-color: #D4AF37; /* Gold focus */
   outline: none;
 }
 
+/* ===============================
+   🎯 Button Styles
+================================== */
 .login-button {
   width: 100%;
   padding: 12px;
-  background-color: #1e6091;
+  background-color: #800000; /* Maroon */
   color: #fff;
   font-size: 16px;
   border: none;
@@ -59,5 +87,34 @@
 }
 
 .login-button:hover {
-  background-color: #168aad;
+  background-color: #a52a2a; /* Lighter maroon */
+}
+
+.login-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* ===============================
+   ⏳ Spinner (Ring Loader)
+================================== */
+.loading-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ring-loader {
+  width: 16px;
+  height: 16px;
+  border: 3px solid transparent;
+  border-top: 3px solid #D4AF37;
+  border-right: 3px solid #D4AF37;
+  border-radius: 50%;
+  animation: spinRing 0.8s linear infinite;
+}
+
+@keyframes spinRing {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
