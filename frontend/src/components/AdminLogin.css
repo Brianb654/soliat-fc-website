@@ -4,9 +4,13 @@
 html, body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Only apply overflow:hidden on login page */
+body.login-page {
+  overflow: hidden;
 }
 
 /* ===============================
