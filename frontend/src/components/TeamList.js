@@ -16,7 +16,7 @@ import SaitoLogo from '../assets/Saito.jpg';
 import SoliatLogo from '../assets/Soliat.jpg';
 import ZebraLogo from '../assets/Zebra.jpg';
 
-// Map team names to logos
+// Map team names to their logos
 const logoMap = {
   "Ainabkoi FC": AinabkoiLogo,
   "Arangai FC": ArangaiLogo,
@@ -41,8 +41,21 @@ const TeamList = () => {
       .get('https://soliat-fc-backend-production.up.railway.app/api/teams')
       .then(res => {
         const sortedTeams = res.data.sort((a, b) => {
-          return a.name.localeCompare(b.name); // Sort alphabetically
+          // If no matches played, sort alphabetically
+          const totalA = a.points + (a.goalsFor || 0) + (a.goalsAgainst || 0);
+          const totalB = b.points + (b.goalsFor || 0) + (b.goalsAgainst || 0);
+
+          if (totalA === 0 && totalB === 0) {
+            return a.name.localeCompare(b.name);
+          }
+
+          // Sort by points, then goal difference
+          if (b.points !== a.points) {
+            return b.points - a.points;
+          }
+          return b.goalDifference - a.goalDifference;
         });
+
         setTeams(sortedTeams);
       })
       .catch(err => {
@@ -61,6 +74,7 @@ const TeamList = () => {
           <tr>
             <th>Pos</th>
             <th>Team</th>
+            <th>MP</th>
             <th>Points</th>
             <th>Goal Difference</th>
           </tr>
@@ -77,6 +91,7 @@ const TeamList = () => {
                 />
                 <span>{team.name}</span>
               </td>
+              <td>{team.matchesPlayed || 0}</td>
               <td>{team.points}</td>
               <td>{team.goalDifference}</td>
             </tr>

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import MatchForm from './MatchForm'; // ✅ import the MatchForm
 import './AdminDashboard.css';
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/admin/create-editor';
@@ -11,6 +12,14 @@ const AdminDashboard = () => {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userRole, setUserRole] = useState('');
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem('role');
+    if (storedRole) {
+      setUserRole(storedRole);
+    }
+  }, []);
 
   const handleCreateEditor = async (e) => {
     e.preventDefault();
@@ -74,51 +83,61 @@ const AdminDashboard = () => {
         </li>
       </ul>
 
-      <hr style={{ margin: '2rem 0' }} />
-
-      <h3>➕ Add Editor</h3>
-
-      {message && (
-        <p
-          style={{
-            color: message.startsWith('✅') ? 'green' : 'red',
-            fontWeight: 'bold',
-          }}
-        >
-          {message}
-        </p>
+      {/* 👇 Only visible to admin or editor */}
+      {(userRole === 'admin' || userRole === 'editor') && (
+        <div style={{ marginTop: '3rem' }}>
+          <h3>📝 Submit Match Result (Update League Table)</h3>
+          <MatchForm />
+        </div>
       )}
 
-      <form onSubmit={handleCreateEditor} style={{ maxWidth: '400px' }}>
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="email"
-          placeholder="Editor Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="password"
-          placeholder="Editor Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={inputStyle}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          style={buttonStyle}
-        >
-          {loading ? 'Creating...' : 'Create Editor'}
-        </button>
-      </form>
+      {userRole === 'admin' && (
+        <>
+          <hr style={{ margin: '2rem 0' }} />
+          <h3>➕ Add Editor</h3>
+          {message && (
+            <p
+              style={{
+                color: message.startsWith('✅') ? 'green' : 'red',
+                fontWeight: 'bold',
+              }}
+            >
+              {message}
+            </p>
+          )}
+
+          <form onSubmit={handleCreateEditor} style={{ maxWidth: '400px' }}>
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={inputStyle}
+            />
+            <input
+              type="email"
+              placeholder="Editor Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={inputStyle}
+            />
+            <input
+              type="password"
+              placeholder="Editor Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={inputStyle}
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              style={buttonStyle}
+            >
+              {loading ? 'Creating...' : 'Create Editor'}
+            </button>
+          </form>
+        </>
+      )}
     </div>
   );
 };

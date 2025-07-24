@@ -10,7 +10,7 @@ import {
   faFacebookF,
   faXTwitter,
 } from '@fortawesome/free-brands-svg-icons';
-import { faShareNodes } from '@fortawesome/free-solid-svg-icons'; // ✅ 3-circle share icon
+import { faShareNodes } from '@fortawesome/free-solid-svg-icons';
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/news';
 
@@ -29,7 +29,16 @@ const NewsList = () => {
     const fetchNews = async () => {
       try {
         const res = await axios.get(API_URL);
-        setNews(res.data.news || res.data);
+        const data = res.data;
+
+        // Support both { news: [...] } and raw array response
+        const fetchedNews = Array.isArray(data.news)
+          ? data.news
+          : Array.isArray(data)
+          ? data
+          : [];
+
+        setNews(fetchedNews);
       } catch (err) {
         console.error('❌ Failed to load news:', err);
       }
@@ -86,9 +95,9 @@ const NewsList = () => {
 
       {loginNotice && <p className="login-notice">{loginNotice}</p>}
 
-      {news.length === 0 ? (
-        <p>No news available.</p>
-      ) : (
+      {Array.isArray(news) && news.length === 0 && <p>No news available.</p>}
+
+      {Array.isArray(news) &&
         news.map((item) => {
           const shareUrl = window.location.origin + '/news';
           const shareText = `${item.title} - Read more on Soliat FC website!`;
@@ -197,8 +206,7 @@ const NewsList = () => {
               )}
             </div>
           );
-        })
-      )}
+        })}
     </div>
   );
 };

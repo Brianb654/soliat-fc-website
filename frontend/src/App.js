@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import HomePage from './components/HomePage';
@@ -10,17 +11,19 @@ import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import AdminUsers from './components/AdminUsers';
 import CreateEditorPage from './components/CreateEditorPage';
-import About from './components/About'; // ✅ Properly used now
+import UpdateLeagueTable from './components/UpdateLeagueTable';
+import About from './components/About';
+
 import './App.css';
 
-// League page
+// ✅ League page wrapper
 const LeaguePage = () => (
   <div className="main-content">
     <TeamList />
   </div>
 );
 
-// ✅ News page – Only show news list to public
+// ✅ News page wrapper
 const NewsPage = () => (
   <div className="news-page-container">
     <div className="news-list-wrapper">
@@ -29,7 +32,7 @@ const NewsPage = () => (
   </div>
 );
 
-// 🔐 Protected Route wrapper
+// 🔐 ProtectedRoute wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const navigate = useNavigate();
   const [isAllowed, setIsAllowed] = useState(false);
@@ -75,6 +78,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/admin/login" element={<AdminLogin onLogin={handleLogin} />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/table" element={<UpdateLeagueTable />} />
 
           {/* 🔐 Admin-only dashboard */}
           <Route
@@ -86,7 +90,7 @@ function App() {
             }
           />
 
-          {/* 🔐 Admin-only: Create new editor */}
+          {/* 🔐 Admin-only create editor */}
           <Route
             path="/admin/create-editor"
             element={
@@ -96,9 +100,9 @@ function App() {
             }
           />
 
-          {/* 🔐 Admin/editor-only Post News */}
+          {/* 🔐 Admin + Editor: Post News */}
           <Route
-            path="/post-news"
+            path="/admin/post-news"
             element={
               <ProtectedRoute allowedRoles={['admin', 'editor']}>
                 <NewsForm />

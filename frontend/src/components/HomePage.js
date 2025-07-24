@@ -64,7 +64,6 @@ const HomePage = () => {
           {images.map((img, index) => (
             <div className="slide" key={index}>
               <img src={img} alt={`Slide ${index + 1}`} className="slider-image" />
-              
             </div>
           ))}
         </div>
@@ -85,24 +84,23 @@ const HomePage = () => {
         </p>
       </div>
 
-<div className="two-column">
-  <div className="info-card">
-    <h2>🌟 Our Vision</h2>
-    <p>
-      To become a leading football club in the region, known for producing top talent,
-      promoting sportsmanship, and strengthening our community through football.
-    </p>
-  </div>
-  <div className="info-card">
-    <h2>🌟 Our Mission</h2>
-    <p>
-      Develop and support players of all ages. Compete at the highest level with integrity
-      and respect. Promote positive values through sport. Engage and uplift our community
-      through football initiatives.
-    </p>
-  </div>
-</div>
-
+      <div className="two-column">
+        <div className="info-card">
+          <h2>🌟 Our Vision</h2>
+          <p>
+            To become a leading football club in the region, known for producing top talent,
+            promoting sportsmanship, and strengthening our community through football.
+          </p>
+        </div>
+        <div className="info-card">
+          <h2>🌟 Our Mission</h2>
+          <p>
+            Develop and support players of all ages. Compete at the highest level with integrity
+            and respect. Promote positive values through sport. Engage and uplift our community
+            through football initiatives.
+          </p>
+        </div>
+      </div>
 
       <div className="info-card full-width">
         <h2>🌟 Get Involved</h2>

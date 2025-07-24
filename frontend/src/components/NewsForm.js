@@ -3,10 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './News.css';
 
-// Backend API URL
 const API_BASE_URL = 'https://soliat-fc-website.onrender.com/api/news';
 
-// Cloudinary Config
 const CLOUD_NAME = 'doprcqz4w';
 const UPLOAD_PRESET = 'soliat uploads';
 
@@ -81,12 +79,7 @@ const NewsForm = () => {
       content,
       author,
       image: imageUrl,
-      // Optional: include today's date
-      // date: new Date().toISOString(),
     };
-
-    console.log('🖼️ Image URL:', imageUrl);
-    console.log('📬 News Payload:', newsData);
 
     try {
       const endpoint = editingNews
@@ -103,10 +96,13 @@ const NewsForm = () => {
       setContent('');
       setAuthor('');
       setImage(null);
-      setExistingImage('');
       setPreview(null);
+      setExistingImage('');
 
-      setTimeout(() => navigate('/news'), 1000);
+      setTimeout(() => {
+        setMessage('');
+        navigate('/news');
+      }, 1200);
     } catch (error) {
       console.error('❌ Submission error:', error);
       const errMsg =
@@ -124,9 +120,7 @@ const NewsForm = () => {
     setImage(selected);
     if (selected) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-      };
+      reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(selected);
     } else {
       setPreview(null);
@@ -162,19 +156,11 @@ const NewsForm = () => {
         /><br />
 
         {existingImage && !preview && (
-          <img
-            src={existingImage}
-            alt="Current"
-            className="preview-image"
-          />
+          <img src={existingImage} alt="Current" className="preview-image" />
         )}
 
         {preview && (
-          <img
-            src={preview}
-            alt="Preview"
-            className="preview-image"
-          />
+          <img src={preview} alt="Preview" className="preview-image" />
         )}
 
         <input
@@ -188,7 +174,6 @@ const NewsForm = () => {
           {loading ? 'Submitting...' : editingNews ? 'Update' : 'Post'}
         </button>
 
-        {/* Share Button */}
         <button
           type="button"
           className="news-button"

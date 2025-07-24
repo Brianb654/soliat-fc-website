@@ -20,8 +20,6 @@ const NavBar = () => {
     localStorage.removeItem('userInfo');
     setUser(null);
     navigate('/');
-
-    // ✅ Refresh the page after logout to reset UI
     setTimeout(() => {
       window.location.reload();
     }, 200);
@@ -46,7 +44,7 @@ const NavBar = () => {
           <li><Link to="/about">About</Link></li>
           <li><Link to="/donate" className="donate-button">Donate</Link></li>
 
-          {canPost && <li><Link to="/post-news">➕ Post News</Link></li>}
+          {canPost && <li><Link to="/admin/post-news">➕ Post News</Link></li>}
           {user?.role === 'admin' && <li><Link to="/admin/dashboard">Dashboard</Link></li>}
 
           {!user ? (
@@ -83,7 +81,7 @@ const NavBar = () => {
             <li><Link to="/about" onClick={toggleMenu}>About</Link></li>
             <li><Link to="/donate" onClick={toggleMenu} className="donate-button">Donate</Link></li>
 
-            {canPost && <li><Link to="/post-news" onClick={toggleMenu}>➕ Post News</Link></li>}
+            {canPost && <li><Link to="/admin/post-news" onClick={toggleMenu}>➕ Post News</Link></li>}
             {user?.role === 'admin' && <li><Link to="/admin/dashboard" onClick={toggleMenu}>Dashboard</Link></li>}
 
             {!user ? (

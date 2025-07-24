@@ -121,5 +121,25 @@ router.get('/users', protect, isAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+// ✅ Reset password for any user (TEMP use only)
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.password = newPassword; // Will get hashed by pre('save')
+    await user.save();
+
+    res.json({ message: '✅ Password reset successful' });
+  } catch (err) {
+    console.error('❌ Reset error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 module.exports = router;

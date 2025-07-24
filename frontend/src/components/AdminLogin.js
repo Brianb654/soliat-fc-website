@@ -26,7 +26,7 @@ const AdminLogin = ({ onLogin }) => {
     try {
       const res = await axios.post(loginUrl, { email, password });
 
-      localStorage.setItem('authToken', res.data.token);
+      localStorage.setItem('token', res.data.token); // ✅ fixed key
       localStorage.setItem('userInfo', JSON.stringify(res.data));
 
       if (onLogin) onLogin(res.data);
