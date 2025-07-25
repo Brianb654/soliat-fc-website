@@ -30,7 +30,7 @@ const logoMap = {
   "Zebra FC": ZebraLogo,
 };
 
-const API_URL = 'https://soliat-fc-backend-production.up.railway.app';
+const API_URL = 'https://soliat-fc-website.onrender.com';
 
 const MatchForm = () => {
   const [formData, setFormData] = useState({
@@ -77,7 +77,7 @@ const MatchForm = () => {
     }
 
     try {
-      const res = await axios.post(
+      await axios.post(
         `${API_URL}/api/matches`,
         {
           teamA: formData.teamA,

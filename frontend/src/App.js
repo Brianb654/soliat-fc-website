@@ -1,29 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 
+// 🔷 UI Components
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
+
+// 📄 Pages
 import HomePage from './components/HomePage';
+import About from './components/About';
 import TeamList from './components/TeamList';
-import NewsForm from './components/NewsForm';
 import NewsList from './components/NewsList';
+
+// 📰 Admin/Editor Pages
+import NewsForm from './components/NewsForm';
+import ManageNews from './components/ManageNews'; // ✅ Make sure this import exists
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
+import EditorDashboard from './components/EditorDashboard';
 import AdminUsers from './components/AdminUsers';
 import CreateEditorPage from './components/CreateEditorPage';
 import UpdateLeagueTable from './components/UpdateLeagueTable';
-import About from './components/About';
 
 import './App.css';
 
-// ✅ League page wrapper
+// ✅ Public Page Wrappers
 const LeaguePage = () => (
   <div className="main-content">
     <TeamList />
   </div>
 );
 
-// ✅ News page wrapper
 const NewsPage = () => (
   <div className="news-page-container">
     <div className="news-list-wrapper">
@@ -32,9 +38,10 @@ const NewsPage = () => (
   </div>
 );
 
-// 🔐 ProtectedRoute wrapper
+// 🔐 Protected Route Logic
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [isAllowed, setIsAllowed] = useState(false);
 
   useEffect(() => {
@@ -44,8 +51,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     } else {
       navigate('/admin/login');
     }
+    setLoading(false);
   }, [navigate, allowedRoles]);
 
+  if (loading) return null;
   return isAllowed ? children : null;
 };
 
@@ -72,15 +81,13 @@ function App() {
         <NavBar user={user} onLogout={handleLogout} />
 
         <Routes>
+          {/* 🌍 Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/league" element={<LeaguePage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/about" element={<About />} />
-          <Route path="/admin/login" element={<AdminLogin onLogin={handleLogin} />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/table" element={<UpdateLeagueTable />} />
 
-          {/* 🔐 Admin-only dashboard */}
+          {/* 🔒 Admin Only */}
           <Route
             path="/admin/dashboard"
             element={
@@ -89,8 +96,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* 🔐 Admin-only create editor */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin/create-editor"
             element={
@@ -100,7 +113,15 @@ function App() {
             }
           />
 
-          {/* 🔐 Admin + Editor: Post News */}
+          {/* 🔒 Shared: Admin + Editor */}
+          <Route
+            path="/admin/news"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'editor']}>
+                <ManageNews />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin/post-news"
             element={
@@ -109,6 +130,27 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/table"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'editor']}>
+                <UpdateLeagueTable />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 🔒 Editor Only */}
+          <Route
+            path="/admin/editor-dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['editor']}>
+                <EditorDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* 🧑‍💼 Auth */}
+          <Route path="/admin/login" element={<AdminLogin onLogin={handleLogin} />} />
         </Routes>
 
         <Footer />

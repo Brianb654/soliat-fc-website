@@ -38,10 +38,9 @@ const TeamList = () => {
 
   useEffect(() => {
     axios
-      .get('https://soliat-fc-backend-production.up.railway.app/api/teams')
+      .get('https://soliat-fc-website.onrender.com/api/teams')
       .then(res => {
         const sortedTeams = res.data.sort((a, b) => {
-          // If no matches played, sort alphabetically
           const totalA = a.points + (a.goalsFor || 0) + (a.goalsAgainst || 0);
           const totalB = b.points + (b.goalsFor || 0) + (b.goalsAgainst || 0);
 
@@ -49,10 +48,10 @@ const TeamList = () => {
             return a.name.localeCompare(b.name);
           }
 
-          // Sort by points, then goal difference
           if (b.points !== a.points) {
             return b.points - a.points;
           }
+
           return b.goalDifference - a.goalDifference;
         });
 

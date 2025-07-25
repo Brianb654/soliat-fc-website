@@ -16,6 +16,9 @@ const NavBar = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const handleLogout = () => {
+    const confirmed = window.confirm('Are you sure you want to log out?');
+    if (!confirmed) return;
+
     localStorage.removeItem('token');
     localStorage.removeItem('userInfo');
     setUser(null);
@@ -24,8 +27,6 @@ const NavBar = () => {
       window.location.reload();
     }, 200);
   };
-
-  const canPost = user?.role === 'admin' || user?.role === 'editor';
 
   return (
     <div className="nav-container">
@@ -44,8 +45,8 @@ const NavBar = () => {
           <li><Link to="/about">About</Link></li>
           <li><Link to="/donate" className="donate-button">Donate</Link></li>
 
-          {canPost && <li><Link to="/admin/post-news">➕ Post News</Link></li>}
           {user?.role === 'admin' && <li><Link to="/admin/dashboard">Dashboard</Link></li>}
+          {user?.role === 'editor' && <li><Link to="/admin/editor-dashboard">My Panel</Link></li>}
 
           {!user ? (
             <li><Link to="/admin/login">🔐 Login</Link></li>
@@ -63,14 +64,14 @@ const NavBar = () => {
         </ul>
       </nav>
 
-      {/* Hamburger Icon (Mobile) */}
+      {/* Mobile Hamburger Icon */}
       <div className="hamburger" onClick={toggleMenu}>
         <svg className="hamburger-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="30" height="30">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </div>
 
-      {/* Mobile Dropdown */}
+      {/* Mobile Dropdown Menu */}
       {isOpen && (
         <nav className="dropdown-menu">
           <ul>
@@ -81,8 +82,8 @@ const NavBar = () => {
             <li><Link to="/about" onClick={toggleMenu}>About</Link></li>
             <li><Link to="/donate" onClick={toggleMenu} className="donate-button">Donate</Link></li>
 
-            {canPost && <li><Link to="/admin/post-news" onClick={toggleMenu}>➕ Post News</Link></li>}
             {user?.role === 'admin' && <li><Link to="/admin/dashboard" onClick={toggleMenu}>Dashboard</Link></li>}
+            {user?.role === 'editor' && <li><Link to="/admin/editor-dashboard" onClick={toggleMenu}>My Panel</Link></li>}
 
             {!user ? (
               <li><Link to="/admin/login" onClick={toggleMenu}>🔐 Login</Link></li>

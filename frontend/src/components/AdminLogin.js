@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './AdminLogin.css';
@@ -15,28 +15,41 @@ const AdminLogin = ({ onLogin }) => {
     console.warn('⚠️ Using fallback BASE_URL. Set REACT_APP_API_URL in .env and Vercel for clean setup.');
   }
 
+  // ✅ AUTO REDIRECT if already logged in
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('userInfo'));
+    if (user?.role === 'admin') {
+      navigate('/admin/dashboard');
+    } else if (user?.role === 'editor') {
+      navigate('/admin/editor-dashboard');
+    }
+  }, [navigate]);
+
+  // ✅ SKIP rendering login form if already logged in
+  const loggedInUser = JSON.parse(localStorage.getItem('userInfo'));
+  if (loggedInUser) return null;
+
   const loginHandler = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    const loginUrl = `${BASE_URL}/api/admin/login`;
-    console.log('🔍 Login URL:', loginUrl);
-
     try {
-      const res = await axios.post(loginUrl, { email, password });
+      const res = await axios.post(`${BASE_URL}/api/admin/login`, { email, password });
 
-      localStorage.setItem('token', res.data.token); // ✅ fixed key
+      localStorage.setItem('token', res.data.token);
       localStorage.setItem('userInfo', JSON.stringify(res.data));
 
       if (onLogin) onLogin(res.data);
 
-      navigate('/admin/post-news');
-      setTimeout(() => {
-        window.location.reload();
-      }, 300);
+      if (res.data.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/admin/editor-dashboard');
+      }
+
+      setTimeout(() => window.location.reload(), 300);
     } catch (err) {
-      console.error('❌ Login error:', err);
       const msg = err.response?.data?.message || 'Unexpected login error';
       setError('❌ ' + msg);
     } finally {
@@ -65,11 +78,7 @@ const AdminLogin = ({ onLogin }) => {
           required
           className="login-input"
         />
-        <button
-          type="submit"
-          className="login-button"
-          disabled={loading}
-        >
+        <button type="submit" className="login-button" disabled={loading}>
           {loading ? (
             <span className="loading-wrapper">
               <span className="ring-loader"></span>
