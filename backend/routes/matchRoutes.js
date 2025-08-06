@@ -36,7 +36,7 @@ router.post('/', protect, isEditorOrAdmin, async (req, res) => {
       return res.status(404).json({ message: 'One or both teams not found in database' });
     }
 
-    // ✅ Update team stats
+    // Update goals
     teamAData.goalsFor += goalsA;
     teamAData.goalsAgainst += goalsB;
     teamBData.goalsFor += goalsB;
@@ -45,15 +45,22 @@ router.post('/', protect, isEditorOrAdmin, async (req, res) => {
     teamAData.goalDifference = teamAData.goalsFor - teamAData.goalsAgainst;
     teamBData.goalDifference = teamBData.goalsFor - teamBData.goalsAgainst;
 
-    // ✅ Assign points
-    if (goalsA > goalsB) teamAData.points += 3;
-    else if (goalsB > goalsA) teamBData.points += 3;
-    else {
+    // Assign points + update W/D/L
+    if (goalsA > goalsB) {
+      teamAData.points += 3;
+      teamAData.wins = (teamAData.wins || 0) + 1;
+      teamBData.losses = (teamBData.losses || 0) + 1;
+    } else if (goalsB > goalsA) {
+      teamBData.points += 3;
+      teamBData.wins = (teamBData.wins || 0) + 1;
+      teamAData.losses = (teamAData.losses || 0) + 1;
+    } else {
       teamAData.points += 1;
       teamBData.points += 1;
+      teamAData.draws = (teamAData.draws || 0) + 1;
+      teamBData.draws = (teamBData.draws || 0) + 1;
     }
 
-    // ✅ NEW: Increment matches played
     teamAData.matchesPlayed = (teamAData.matchesPlayed || 0) + 1;
     teamBData.matchesPlayed = (teamBData.matchesPlayed || 0) + 1;
 
@@ -92,15 +99,22 @@ router.delete('/:id', protect, isEditorOrAdmin, async (req, res) => {
     teamAData.goalDifference = teamAData.goalsFor - teamAData.goalsAgainst;
     teamBData.goalDifference = teamBData.goalsFor - teamBData.goalsAgainst;
 
-    // Reverse points
-    if (goalsA > goalsB) teamAData.points -= 3;
-    else if (goalsB > goalsA) teamBData.points -= 3;
-    else {
+    // Reverse points and W/D/L
+    if (goalsA > goalsB) {
+      teamAData.points -= 3;
+      teamAData.wins = Math.max((teamAData.wins || 1) - 1, 0);
+      teamBData.losses = Math.max((teamBData.losses || 1) - 1, 0);
+    } else if (goalsB > goalsA) {
+      teamBData.points -= 3;
+      teamBData.wins = Math.max((teamBData.wins || 1) - 1, 0);
+      teamAData.losses = Math.max((teamAData.losses || 1) - 1, 0);
+    } else {
       teamAData.points -= 1;
       teamBData.points -= 1;
+      teamAData.draws = Math.max((teamAData.draws || 1) - 1, 0);
+      teamBData.draws = Math.max((teamBData.draws || 1) - 1, 0);
     }
 
-    // Reverse matches played
     teamAData.matchesPlayed = Math.max((teamAData.matchesPlayed || 1) - 1, 0);
     teamBData.matchesPlayed = Math.max((teamBData.matchesPlayed || 1) - 1, 0);
 
@@ -108,7 +122,6 @@ router.delete('/:id', protect, isEditorOrAdmin, async (req, res) => {
     await teamBData.save();
     await match.deleteOne();
 
-    // ✅ Automatically trigger rebuild
     const rebuildUrl = 'https://soliat-fc-website.onrender.com.app/api/teams/rebuild';
     await axios.post(rebuildUrl);
 

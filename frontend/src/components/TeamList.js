@@ -16,7 +16,7 @@ import SaitoLogo from '../assets/Saito.jpg';
 import SoliatLogo from '../assets/Soliat.jpg';
 import ZebraLogo from '../assets/Zebra.jpg';
 
-// Team logo map
+// Map team names to logos
 const logoMap = {
   "Ainabkoi FC": AinabkoiLogo,
   "Arangai FC": ArangaiLogo,
@@ -41,10 +41,32 @@ const TeamList = () => {
   useEffect(() => {
     axios.get(API_URL)
       .then(res => {
-        const sortedTeams = res.data.sort((a, b) => {
+        const sortedTeams = res.data.map(team => {
+          const wins = team.wins || 0;
+          const draws = team.draws || 0;
+          const losses = team.losses || 0;
+          const matchesPlayed = wins + draws + losses;
+          const goalsFor = team.goalsFor || 0;
+          const goalsAgainst = team.goalsAgainst || 0;
+          const goalDifference = goalsFor - goalsAgainst;
+          const points = team.points ?? (wins * 3 + draws);
+
+          return {
+            ...team,
+            wins,
+            draws,
+            losses,
+            matchesPlayed,
+            goalsFor,
+            goalsAgainst,
+            goalDifference,
+            points,
+          };
+        }).sort((a, b) => {
           if (b.points !== a.points) return b.points - a.points;
           return b.goalDifference - a.goalDifference;
         });
+
         setTeams(sortedTeams);
       })
       .catch(err => {
@@ -58,57 +80,51 @@ const TeamList = () => {
       <h2>🏆 Ainabkoi Sports Association League Table</h2>
       {error && <p className="error">{error}</p>}
 
-      <table className="league-table">
-        <thead>
-          <tr>
-            <th>Pos</th>
-            <th>Team</th>
-            <th>MP</th>
-            <th>W</th>
-            <th>D</th>
-            <th>L</th>
-            <th>GF</th>
-            <th>GA</th>
-            <th>GD</th>
-            <th>Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-          {teams.map((team, index) => {
-            const teamName = team.name?.trim();
-            const matchesPlayed = team.matchesPlayed || 0;
-            const wins = team.wins || 0;
-            const draws = team.draws || 0;
-            const losses = team.losses || 0;
-            const goalsFor = team.goalsFor || 0;
-            const goalsAgainst = team.goalsAgainst || 0;
-            const goalDifference = goalsFor - goalsAgainst;
-            const points = team.points || (wins * 3 + draws);
+      <div className="table-wrapper">
+        <table className="league-table">
+          <thead>
+            <tr>
+              <th>Pos</th>
+              <th>Team</th>
+              <th>MP</th>
+              <th>W</th>
+              <th>D</th>
+              <th>L</th>
+              <th>GF</th>
+              <th>GA</th>
+              <th>GD</th>
+              <th>Pts</th>
+            </tr>
+          </thead>
+          <tbody>
+            {teams.map((team, index) => {
+              const teamName = team.name?.trim();
 
-            return (
-              <tr key={team._id}>
-                <td>{index + 1}</td>
-                <td className="team-cell">
-                  <img
-                    src={logoMap[teamName] || 'https://via.placeholder.com/30'}
-                    alt={`${teamName} logo`}
-                    className="team-logo"
-                  />
-                  <span>{teamName}</span>
-                </td>
-                <td>{matchesPlayed}</td>
-                <td>{wins}</td>
-                <td>{draws}</td>
-                <td>{losses}</td>
-                <td>{goalsFor}</td>
-                <td>{goalsAgainst}</td>
-                <td>{goalDifference}</td>
-                <td>{points}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+              return (
+                <tr key={team._id || index}>
+                  <td className="nowrap">{index + 1}</td>
+                  <td className="team-cell">
+                    <img
+                      src={logoMap[teamName] || 'https://via.placeholder.com/30'}
+                      alt={`${teamName} logo`}
+                      className="team-logo"
+                    />
+                    <span className="team-name">{teamName}</span>
+                  </td>
+                  <td className="nowrap">{team.matchesPlayed}</td>
+                  <td className="nowrap">{team.wins}</td>
+                  <td className="nowrap">{team.draws}</td>
+                  <td className="nowrap">{team.losses}</td>
+                  <td className="nowrap">{team.goalsFor}</td>
+                  <td className="nowrap">{team.goalsAgainst}</td>
+                  <td className="nowrap">{team.goalDifference}</td>
+                  <td className="nowrap">{team.points}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -51,7 +51,7 @@
 .news-image {
   width: 100%;
   height: auto;
-  object-fit: contain; /* Prevents top-cut cropping */
+  object-fit: contain;
   border-radius: 0.5rem;
   cursor: pointer;
   transition: transform 0.3s ease;
@@ -63,7 +63,7 @@
 /* Optional: Only apply max-height on larger screens */
 @media (min-width: 768px) {
   .news-image {
-    max-height: 400px;
+    max-height: 600px; /* Increased from 400px */
   }
 }
 
@@ -92,6 +92,36 @@
   border-radius: 4px;
   font-size: 1rem;
   resize: vertical;
+}
+
+/* ✅ Better form usability on mobile */
+@media (max-width: 767px) {
+  .news-textarea {
+    min-height: 200px;
+    font-size: 1.1rem;
+    padding: 1rem;
+  }
+
+  .news-input {
+    font-size: 1.05rem;
+    padding: 0.9rem;
+  }
+
+  .news-form-container {
+    padding: 1.2rem;
+  }
+
+  .news-button {
+    font-size: 1.05rem;
+    padding: 0.8rem 1.5rem;
+  }
+}
+
+/* Optional: Tweak desktop textarea */
+@media (min-width: 768px) {
+  .news-textarea {
+    min-height: 180px;
+  }
 }
 
 .news-button {

@@ -1,7 +1,7 @@
 /* 🎯 Container */
 .league-container {
   width: 100%;
-  max-width: 1000px; /* ✅ Allow wider layout on desktop */
+  max-width: 1000px;
   margin: 0 auto;
   padding: 1rem;
   overflow-x: auto;
@@ -13,17 +13,16 @@
   font-size: 1.7rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
-  color: #800000; /* Matches Soliat FC theme */
+  color: #800000;
 }
 
 /* 📋 Table Base */
 .league-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
-  color: black;
-  table-layout: fixed; /* ✅ Better column width handling */
-  word-wrap: break-word;
+  background-color: #ffffff;
+  color: #000000;
+  table-layout: fixed;
 }
 
 /* 🧱 Table Cells */
@@ -32,15 +31,16 @@
   border: 1px solid #ddd;
   font-size: 1.05rem;
   padding: 10px 8px;
-  white-space: normal;
-  overflow-wrap: break-word;
   text-align: center;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* 🟦 Table Header */
 .league-table th {
   background-color: #004aad;
-  color: white;
+  color: #ffffff;
   font-size: 1.1rem;
   padding: 12px 8px;
   text-transform: uppercase;
@@ -59,7 +59,7 @@
 
 /* ✨ Hover Effect */
 .league-table tr:hover {
-  background-color: #ddd;
+  background-color: #e6e6e6;
 }
 
 /* ❗ Error Message */
@@ -73,12 +73,13 @@
 .team-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   justify-content: flex-start;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   text-align: left;
+  min-width: 0;
 }
 
 /* 🖼️ Team Logo */
@@ -94,9 +95,12 @@
 /* 🎯 Wider Team Column */
 .league-table td:nth-child(2),
 .league-table th:nth-child(2) {
-  width: 280px;
-  max-width: 100%;
+  width: 220px;
+  max-width: 220px;
   text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* 📱 Mobile Responsiveness */
@@ -113,17 +117,21 @@
   .league-table td {
     font-size: 0.85rem;
     padding: 6px;
-    word-break: break-word;
   }
 
   .league-table td:nth-child(2),
   .league-table th:nth-child(2) {
-    width: auto;
-    max-width: 150px;
+    min-width: 150px;
+    max-width: 200px;
   }
 
   .league-table th:first-child,
   .league-table td:first-child {
     width: 30px;
+  }
+
+  .team-logo {
+    width: 24px;
+    height: 24px;
   }
 }

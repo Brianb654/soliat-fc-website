@@ -35,20 +35,22 @@ router.post('/', async (req, res) => {
 // 🔁 POST /api/teams/rebuild — Rebuild league table after match deletion or reset
 router.post('/rebuild', async (req, res) => {
   try {
+    // 1. Reset all teams
     const allTeams = await Team.find();
-
-    // Reset all stats
     for (const team of allTeams) {
       team.points = 0;
       team.goalsFor = 0;
       team.goalsAgainst = 0;
       team.goalDifference = 0;
       team.matchesPlayed = 0;
+      team.wins = 0;
+      team.draws = 0;
+      team.losses = 0;
       await team.save();
     }
 
+    // 2. Recalculate stats from all matches
     const matches = await Match.find();
-
     for (const match of matches) {
       const { teamA, teamB, goalsA, goalsB } = match;
 
@@ -57,25 +59,34 @@ router.post('/rebuild', async (req, res) => {
 
       if (!teamAData || !teamBData) continue;
 
-      // Update team A
+      // Update goals and matches
       teamAData.goalsFor += goalsA;
       teamAData.goalsAgainst += goalsB;
-      teamAData.goalDifference = teamAData.goalsFor - teamAData.goalsAgainst;
       teamAData.matchesPlayed += 1;
 
-      // Update team B
       teamBData.goalsFor += goalsB;
       teamBData.goalsAgainst += goalsA;
-      teamBData.goalDifference = teamBData.goalsFor - teamBData.goalsAgainst;
       teamBData.matchesPlayed += 1;
 
-      // Assign points
-      if (goalsA > goalsB) teamAData.points += 3;
-      else if (goalsB > goalsA) teamBData.points += 3;
-      else {
+      // Win/Draw/Loss and Points
+      if (goalsA > goalsB) {
+        teamAData.wins += 1;
+        teamAData.points += 3;
+        teamBData.losses += 1;
+      } else if (goalsB > goalsA) {
+        teamBData.wins += 1;
+        teamBData.points += 3;
+        teamAData.losses += 1;
+      } else {
+        teamAData.draws += 1;
+        teamBData.draws += 1;
         teamAData.points += 1;
         teamBData.points += 1;
       }
+
+      // Goal difference
+      teamAData.goalDifference = teamAData.goalsFor - teamAData.goalsAgainst;
+      teamBData.goalDifference = teamBData.goalsFor - teamBData.goalsAgainst;
 
       await teamAData.save();
       await teamBData.save();
@@ -89,4 +100,3 @@ router.post('/rebuild', async (req, res) => {
 });
 
 module.exports = router;
-
