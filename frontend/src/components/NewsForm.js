@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './News.css';
 
-const API_BASE_URL = 'https://soliat-fc-website.onrender.com/api/news';
+const API_BASE_URL = 'https://soliat-fc-backend-production.up.railway.app/api/news';
 
 const CLOUD_NAME = 'doprcqz4w';
 const UPLOAD_PRESET = 'soliat uploads';

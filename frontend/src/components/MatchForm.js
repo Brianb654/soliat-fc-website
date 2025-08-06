@@ -30,7 +30,7 @@ const logoMap = {
   "Zebra FC": ZebraLogo,
 };
 
-const API_URL = 'https://soliat-fc-website.onrender.com';
+const BASE_URL = 'https://soliat-fc-website.onrender.com';
 
 const MatchForm = () => {
   const [formData, setFormData] = useState({
@@ -46,12 +46,10 @@ const MatchForm = () => {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/teams`);
-        const sorted = res.data.sort((a, b) => {
-          const nameA = a.name || '';
-          const nameB = b.name || '';
-          return nameA.localeCompare(nameB);
-        });
+        const res = await axios.get(`${BASE_URL}/api/teams`);
+        const sorted = res.data.sort((a, b) =>
+          (a.name || '').localeCompare(b.name || '')
+        );
         setTeams(sorted);
       } catch (err) {
         console.error('❌ Failed to load teams:', err);
@@ -78,7 +76,7 @@ const MatchForm = () => {
 
     try {
       await axios.post(
-        `${API_URL}/api/matches`,
+        `${BASE_URL}/api/matches`,
         {
           teamA: formData.teamA,
           teamB: formData.teamB,
@@ -104,18 +102,12 @@ const MatchForm = () => {
   return (
     <div className="match-form-container">
       <h2 className="form-title">Submit Match Result</h2>
-
       {message && <div className="form-success">{message}</div>}
       {error && <div className="form-error">{error}</div>}
 
       <form onSubmit={handleSubmit} className="match-form">
         <div className="dropdown-group">
-          <select
-            name="teamA"
-            value={formData.teamA}
-            onChange={handleChange}
-            required
-          >
+          <select name="teamA" value={formData.teamA} onChange={handleChange} required>
             <option value="">Select Team A</option>
             {teams.map((team) => (
               <option key={team._id} value={team.name}>
@@ -124,11 +116,7 @@ const MatchForm = () => {
             ))}
           </select>
           {formData.teamA && logoMap[formData.teamA] && (
-            <img
-              src={logoMap[formData.teamA]}
-              alt={`${formData.teamA} logo`}
-              className="team-logo"
-            />
+            <img src={logoMap[formData.teamA]} alt={formData.teamA} className="team-logo" />
           )}
         </div>
 
@@ -142,12 +130,7 @@ const MatchForm = () => {
         />
 
         <div className="dropdown-group">
-          <select
-            name="teamB"
-            value={formData.teamB}
-            onChange={handleChange}
-            required
-          >
+          <select name="teamB" value={formData.teamB} onChange={handleChange} required>
             <option value="">Select Team B</option>
             {teams.map((team) => (
               <option key={team._id} value={team.name}>
@@ -156,11 +139,7 @@ const MatchForm = () => {
             ))}
           </select>
           {formData.teamB && logoMap[formData.teamB] && (
-            <img
-              src={logoMap[formData.teamB]}
-              alt={`${formData.teamB} logo`}
-              className="team-logo"
-            />
+            <img src={logoMap[formData.teamB]} alt={formData.teamB} className="team-logo" />
           )}
         </div>
 

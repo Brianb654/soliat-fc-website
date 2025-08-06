@@ -13,6 +13,7 @@
   font-size: 1.7rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
+  color: #800000; /* Matches Soliat FC theme */
 }
 
 /* 📋 Table Base */
@@ -42,6 +43,7 @@
   color: white;
   font-size: 1.1rem;
   padding: 12px 8px;
+  text-transform: uppercase;
 }
 
 /* Make 'Pos' Column Smaller */
@@ -85,6 +87,8 @@
   height: 28px;
   border-radius: 50%;
   flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid #ccc;
 }
 
 /* 🎯 Wider Team Column */

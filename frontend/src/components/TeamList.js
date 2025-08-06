@@ -16,7 +16,7 @@ import SaitoLogo from '../assets/Saito.jpg';
 import SoliatLogo from '../assets/Soliat.jpg';
 import ZebraLogo from '../assets/Zebra.jpg';
 
-// Map team names to their logos
+// Team logo map
 const logoMap = {
   "Ainabkoi FC": AinabkoiLogo,
   "Arangai FC": ArangaiLogo,
@@ -32,33 +32,23 @@ const logoMap = {
   "Zebra FC": ZebraLogo,
 };
 
+const API_URL = 'https://soliat-fc-website.onrender.com/api/teams';
+
 const TeamList = () => {
   const [teams, setTeams] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    axios
-      .get('https://soliat-fc-website.onrender.com/api/teams')
+    axios.get(API_URL)
       .then(res => {
         const sortedTeams = res.data.sort((a, b) => {
-          const totalA = a.points + (a.goalsFor || 0) + (a.goalsAgainst || 0);
-          const totalB = b.points + (b.goalsFor || 0) + (b.goalsAgainst || 0);
-
-          if (totalA === 0 && totalB === 0) {
-            return a.name.localeCompare(b.name);
-          }
-
-          if (b.points !== a.points) {
-            return b.points - a.points;
-          }
-
+          if (b.points !== a.points) return b.points - a.points;
           return b.goalDifference - a.goalDifference;
         });
-
         setTeams(sortedTeams);
       })
       .catch(err => {
-        console.error('Error fetching teams:', err);
+        console.error('❌ Error fetching teams:', err);
         setError('Failed to load teams');
       });
   }, []);
@@ -74,27 +64,49 @@ const TeamList = () => {
             <th>Pos</th>
             <th>Team</th>
             <th>MP</th>
-            <th>Points</th>
-            <th>Goal Difference</th>
+            <th>W</th>
+            <th>D</th>
+            <th>L</th>
+            <th>GF</th>
+            <th>GA</th>
+            <th>GD</th>
+            <th>Pts</th>
           </tr>
         </thead>
         <tbody>
-          {teams.map((team, index) => (
-            <tr key={team._id}>
-              <td>{index + 1}</td>
-              <td className="team-cell">
-                <img
-                  src={logoMap[team.name] || 'https://via.placeholder.com/30'}
-                  alt={`${team.name} logo`}
-                  className="team-logo"
-                />
-                <span>{team.name}</span>
-              </td>
-              <td>{team.matchesPlayed || 0}</td>
-              <td>{team.points}</td>
-              <td>{team.goalDifference}</td>
-            </tr>
-          ))}
+          {teams.map((team, index) => {
+            const teamName = team.name?.trim();
+            const matchesPlayed = team.matchesPlayed || 0;
+            const wins = team.wins || 0;
+            const draws = team.draws || 0;
+            const losses = team.losses || 0;
+            const goalsFor = team.goalsFor || 0;
+            const goalsAgainst = team.goalsAgainst || 0;
+            const goalDifference = goalsFor - goalsAgainst;
+            const points = team.points || (wins * 3 + draws);
+
+            return (
+              <tr key={team._id}>
+                <td>{index + 1}</td>
+                <td className="team-cell">
+                  <img
+                    src={logoMap[teamName] || 'https://via.placeholder.com/30'}
+                    alt={`${teamName} logo`}
+                    className="team-logo"
+                  />
+                  <span>{teamName}</span>
+                </td>
+                <td>{matchesPlayed}</td>
+                <td>{wins}</td>
+                <td>{draws}</td>
+                <td>{losses}</td>
+                <td>{goalsFor}</td>
+                <td>{goalsAgainst}</td>
+                <td>{goalDifference}</td>
+                <td>{points}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

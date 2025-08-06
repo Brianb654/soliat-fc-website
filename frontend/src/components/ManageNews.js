@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import NewsForm from './NewsForm';
 import './ManageNews.css';
 
-const API_URL = 'https://soliat-fc-website.onrender.com/api/news';
+const API_URL = 'https://soliat-fc-backend-production.up.railway.app/api/news';
 
 const ManageNews = () => {
   const [newsList, setNewsList] = useState([]);

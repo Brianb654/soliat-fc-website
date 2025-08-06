@@ -13,7 +13,7 @@ import NewsList from './components/NewsList';
 
 // 📰 Admin/Editor Pages
 import NewsForm from './components/NewsForm';
-import ManageNews from './components/ManageNews'; // ✅ Make sure this import exists
+import ManageNews from './components/ManageNews';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import EditorDashboard from './components/EditorDashboard';
@@ -22,6 +22,9 @@ import CreateEditorPage from './components/CreateEditorPage';
 import UpdateLeagueTable from './components/UpdateLeagueTable';
 
 import './App.css';
+
+// ✅ Global API URL
+export const API_BASE_URL = 'https://soliat-fc-website.onrender.com';
 
 // ✅ Public Page Wrappers
 const LeaguePage = () => (
@@ -38,7 +41,7 @@ const NewsPage = () => (
   </div>
 );
 
-// 🔐 Protected Route Logic
+// 🔐 Protected Route Wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -81,13 +84,13 @@ function App() {
         <NavBar user={user} onLogout={handleLogout} />
 
         <Routes>
-          {/* 🌍 Public Routes */}
+          {/* 🌍 Public Pages */}
           <Route path="/" element={<HomePage />} />
           <Route path="/league" element={<LeaguePage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/about" element={<About />} />
 
-          {/* 🔒 Admin Only */}
+          {/* 🔐 Admin Only */}
           <Route
             path="/admin/dashboard"
             element={
@@ -113,7 +116,7 @@ function App() {
             }
           />
 
-          {/* 🔒 Shared: Admin + Editor */}
+          {/* 🔐 Admin + Editor */}
           <Route
             path="/admin/news"
             element={
@@ -139,7 +142,7 @@ function App() {
             }
           />
 
-          {/* 🔒 Editor Only */}
+          {/* 🔐 Editor Only */}
           <Route
             path="/admin/editor-dashboard"
             element={
@@ -149,7 +152,7 @@ function App() {
             }
           />
 
-          {/* 🧑‍💼 Auth */}
+          {/* 🔐 Login */}
           <Route path="/admin/login" element={<AdminLogin onLogin={handleLogin} />} />
         </Routes>
 
