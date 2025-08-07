@@ -4,6 +4,8 @@ import axios from 'axios';
 import MatchForm from './MatchForm'; // ✅ form for creating matches
 import AdminEditMatches from './AdminEditMatches'; // ✅ replaced MatchList with AdminEditMatches
 import './AdminDashboard.css';
+import './AdminEditMatch.css';
+
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/admin/create-editor';
 
@@ -71,7 +73,7 @@ const AdminDashboard = () => {
           <Link to="/admin/news">📰 Manage News</Link>
         </li>
         <li style={{ marginBottom: '10px' }}>
-          <Link to="/admin/teams">⚽ Manage Matches</Link>
+          <Link to="/admin/matches">⚽ Manage Matches</Link>
         </li>
         <li style={{ marginBottom: '10px' }}>
           <Link to="/admin/players">👥 Manage Players</Link>
