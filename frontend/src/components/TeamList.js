@@ -18,18 +18,18 @@ import ZebraLogo from '../assets/Zebra.jpg';
 
 // Map team names to logos
 const logoMap = {
-  "Ainabkoi FC": AinabkoiLogo,
-  "Arangai FC": ArangaiLogo,
-  "Drys FC": DrysLogo,
-  "Kapsengwet FC": KapsengwetLogo,
-  "Kewamoi FC": KewamoiLogo,
-  "Kimuruk FC": KimurukLogo,
-  "Kipteimet FC": KipteimetLogo,
-  "Ndanai FC": NdanaiLogo,
-  "Ngarua FC": NgaruaLogo,
-  "Saito FC": SaitoLogo,
-  "Soliat FC": SoliatLogo,
-  "Zebra FC": ZebraLogo,
+  'Ainabkoi FC': AinabkoiLogo,
+  'Arangai FC': ArangaiLogo,
+  'Drys FC': DrysLogo,
+  'Kapsengwet FC': KapsengwetLogo,
+  'Kewamoi FC': KewamoiLogo,
+  'Kimuruk FC': KimurukLogo,
+  'Kipteimet FC': KipteimetLogo,
+  'Ndanai FC': NdanaiLogo,
+  'Ngarua FC': NgaruaLogo,
+  'Saito FC': SaitoLogo,
+  'Soliat FC': SoliatLogo,
+  'Zebra FC': ZebraLogo,
 };
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/teams';
@@ -78,7 +78,8 @@ const TeamList = () => {
   return (
     <div className="league-container">
       <h2>🏆 Ainabkoi Sports Association League Table</h2>
-      {error && <p className="error">{error}</p>}
+
+      {error && <div className="error">{error}</div>}
 
       <div className="table-wrapper">
         <table className="league-table">
@@ -99,7 +100,6 @@ const TeamList = () => {
           <tbody>
             {teams.map((team, index) => {
               const teamName = team.name?.trim();
-
               return (
                 <tr key={team._id || index}>
                   <td className="nowrap">{index + 1}</td>
