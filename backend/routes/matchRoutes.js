@@ -1,9 +1,20 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
-const Match = require('../models/Match');  
+const Match = require('../models/Match');
 const Team = require('../models/Team');
 const { protect, isEditorOrAdmin } = require('../middleware/authMiddleware');
+
+// ✅ NEW: GET all matches — public route
+router.get('/', async (req, res) => {
+  try {
+    const matches = await Match.find().sort({ createdAt: -1 }); // latest first
+    res.json(matches);
+  } catch (error) {
+    console.error('❌ Error fetching matches:', error.message);
+    res.status(500).json({ message: 'Failed to fetch matches' });
+  }
+});
 
 // 📝 POST match result — only for admin/editor
 router.post('/', protect, isEditorOrAdmin, async (req, res) => {
@@ -74,7 +85,102 @@ router.post('/', protect, isEditorOrAdmin, async (req, res) => {
   }
 });
 
-// ❌ DELETE a match and auto-rebuild league
+// ✏️ PUT update match result
+router.put('/:id', protect, isEditorOrAdmin, async (req, res) => {
+  try {
+    const match = await Match.findById(req.params.id);
+    if (!match) return res.status(404).json({ message: 'Match not found' });
+
+    const { teamA, teamB, goalsA, goalsB } = req.body;
+
+    if (!teamA || !teamB || goalsA == null || goalsB == null) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    // Reverse old result
+    const teamAOld = await Team.findOne({ name: { $regex: new RegExp(`^${match.teamA}$`, 'i') } });
+    const teamBOld = await Team.findOne({ name: { $regex: new RegExp(`^${match.teamB}$`, 'i') } });
+
+    if (!teamAOld || !teamBOld) {
+      return res.status(404).json({ message: 'One or both original teams not found' });
+    }
+
+    // Reverse goals and stats
+    teamAOld.goalsFor -= match.goalsA;
+    teamAOld.goalsAgainst -= match.goalsB;
+    teamBOld.goalsFor -= match.goalsB;
+    teamBOld.goalsAgainst -= match.goalsA;
+
+    teamAOld.goalDifference = teamAOld.goalsFor - teamAOld.goalsAgainst;
+    teamBOld.goalDifference = teamBOld.goalsFor - teamBOld.goalsAgainst;
+
+    if (match.goalsA > match.goalsB) {
+      teamAOld.points -= 3;
+      teamAOld.wins = Math.max((teamAOld.wins || 1) - 1, 0);
+      teamBOld.losses = Math.max((teamBOld.losses || 1) - 1, 0);
+    } else if (match.goalsB > match.goalsA) {
+      teamBOld.points -= 3;
+      teamBOld.wins = Math.max((teamBOld.wins || 1) - 1, 0);
+      teamAOld.losses = Math.max((teamAOld.losses || 1) - 1, 0);
+    } else {
+      teamAOld.points -= 1;
+      teamBOld.points -= 1;
+      teamAOld.draws = Math.max((teamAOld.draws || 1) - 1, 0);
+      teamBOld.draws = Math.max((teamBOld.draws || 1) - 1, 0);
+    }
+
+    await teamAOld.save();
+    await teamBOld.save();
+
+    // Update match
+    match.teamA = teamA.trim();
+    match.teamB = teamB.trim();
+    match.goalsA = goalsA;
+    match.goalsB = goalsB;
+    await match.save();
+
+    // Apply new result
+    const teamANew = await Team.findOne({ name: { $regex: new RegExp(`^${teamA}$`, 'i') } });
+    const teamBNew = await Team.findOne({ name: { $regex: new RegExp(`^${teamB}$`, 'i') } });
+
+    if (!teamANew || !teamBNew) {
+      return res.status(404).json({ message: 'One or both new teams not found' });
+    }
+
+    teamANew.goalsFor += goalsA;
+    teamANew.goalsAgainst += goalsB;
+    teamBNew.goalsFor += goalsB;
+    teamBNew.goalsAgainst += goalsA;
+
+    teamANew.goalDifference = teamANew.goalsFor - teamANew.goalsAgainst;
+    teamBNew.goalDifference = teamBNew.goalsFor - teamBNew.goalsAgainst;
+
+    if (goalsA > goalsB) {
+      teamANew.points += 3;
+      teamANew.wins = (teamANew.wins || 0) + 1;
+      teamBNew.losses = (teamBNew.losses || 0) + 1;
+    } else if (goalsB > goalsA) {
+      teamBNew.points += 3;
+      teamBNew.wins = (teamBNew.wins || 0) + 1;
+      teamANew.losses = (teamANew.losses || 0) + 1;
+    } else {
+      teamANew.points += 1;
+      teamBNew.points += 1;
+      teamANew.draws = (teamANew.draws || 0) + 1;
+      teamBNew.draws = (teamBNew.draws || 0) + 1;
+    }
+
+    await teamANew.save();
+    await teamBNew.save();
+
+    res.json({ message: '✏️ Match result updated and league table adjusted.', match });
+  } catch (error) {
+    console.error('❌ Error updating match:', error.message);
+    res.status(500).json({ message: 'Server error while updating match' });
+  }
+});
+
+// ❌ DELETE match
 router.delete('/:id', protect, isEditorOrAdmin, async (req, res) => {
   try {
     const match = await Match.findById(req.params.id);
@@ -89,17 +195,15 @@ router.delete('/:id', protect, isEditorOrAdmin, async (req, res) => {
       return res.status(404).json({ message: 'One or both teams not found' });
     }
 
-    // Reverse goals
+    // Reverse goals and stats
     teamAData.goalsFor -= goalsA;
     teamAData.goalsAgainst -= goalsB;
     teamBData.goalsFor -= goalsB;
     teamBData.goalsAgainst -= goalsA;
 
-    // Reverse goal difference
     teamAData.goalDifference = teamAData.goalsFor - teamAData.goalsAgainst;
     teamBData.goalDifference = teamBData.goalsFor - teamBData.goalsAgainst;
 
-    // Reverse points and W/D/L
     if (goalsA > goalsB) {
       teamAData.points -= 3;
       teamAData.wins = Math.max((teamAData.wins || 1) - 1, 0);
@@ -122,7 +226,7 @@ router.delete('/:id', protect, isEditorOrAdmin, async (req, res) => {
     await teamBData.save();
     await match.deleteOne();
 
-    const rebuildUrl = 'https://soliat-fc-website.onrender.com.app/api/teams/rebuild';
+    const rebuildUrl = 'https://soliat-fc-website.onrender.com/api/teams/rebuild';
     await axios.post(rebuildUrl);
 
     res.json({ message: '🗑 Match deleted, stats reversed, league rebuilt' });

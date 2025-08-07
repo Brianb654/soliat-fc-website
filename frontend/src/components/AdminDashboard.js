@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import MatchForm from './MatchForm'; // ✅ import the MatchForm
+import MatchForm from './MatchForm'; // ✅ import MatchForm
+import MatchList from './MatchList'; // ✅ import MatchList
 import './AdminDashboard.css';
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/admin/create-editor';
@@ -88,6 +89,11 @@ const AdminDashboard = () => {
         <div style={{ marginTop: '3rem' }}>
           <h3>📝 Submit Match Result (Update League Table)</h3>
           <MatchForm />
+
+          <hr style={{ margin: '3rem 0' }} />
+
+          <h3>📋 View & Manage All Matches</h3>
+          <MatchList /> {/* ✅ MatchList shown to both admin & editor */}
         </div>
       )}
 

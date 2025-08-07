@@ -89,6 +89,7 @@ function App() {
           <Route path="/league" element={<LeaguePage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/about" element={<About />} />
+          
 
           {/* 🔐 Admin Only */}
           <Route

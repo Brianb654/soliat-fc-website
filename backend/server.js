@@ -48,12 +48,12 @@ app.post('/api/test', (req, res) => {
   res.json({ received: req.body });
 });
 
-// ✅ API Routes (ensure your Admin model is used inside adminRoutes.js)
+// ✅ API Routes
 app.use('/api/teams', require('./routes/teamRoutes'));
-app.use('/api/matches', require('./routes/matchRoutes'));
+app.use('/api/matches', require('./routes/matchRoutes')); // ✅ Matches route is here
 app.use('/api/news', require('./routes/newsRoutes'));
-app.use('/api/auth', require('./routes/authRoutes'));   // For future user auth
-app.use('/api/admin', require('./routes/adminRoutes')); // Admins + editors via AdminUser.js
+app.use('/api/auth', require('./routes/authRoutes'));     // For future user auth
+app.use('/api/admin', require('./routes/adminRoutes'));   // Admins + editors
 
 // ❌ 404 Fallback
 app.use((req, res) => {
