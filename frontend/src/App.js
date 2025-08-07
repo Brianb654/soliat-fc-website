@@ -10,6 +10,7 @@ import HomePage from './components/HomePage';
 import About from './components/About';
 import TeamList from './components/TeamList';
 import NewsList from './components/NewsList';
+import MatchList from './components/MatchList'; // ✅ NEW
 
 // 📰 Admin/Editor Pages
 import NewsForm from './components/NewsForm';
@@ -89,7 +90,7 @@ function App() {
           <Route path="/league" element={<LeaguePage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/about" element={<About />} />
-          
+          <Route path="/matches" element={<MatchList />} /> {/* ✅ NEW route for match list */}
 
           {/* 🔐 Admin Only */}
           <Route

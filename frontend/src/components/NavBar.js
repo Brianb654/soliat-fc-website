@@ -41,6 +41,7 @@ const NavBar = () => {
           <li><Link to="/">Home</Link></li>
           <li><Link to="/league">League Table</Link></li>
           <li><Link to="/news">News</Link></li>
+          <li><Link to="/matches">Matches</Link></li>
           <li><Link to="/officials">ASA Officials</Link></li>
           <li><Link to="/about">About</Link></li>
           <li><Link to="/donate" className="donate-button">Donate</Link></li>
@@ -78,7 +79,8 @@ const NavBar = () => {
             <li><Link to="/" onClick={toggleMenu}>Home</Link></li>
             <li><Link to="/league" onClick={toggleMenu}>League Table</Link></li>
             <li><Link to="/news" onClick={toggleMenu}>News</Link></li>
-            <li><Link to="/officials" onClick={toggleMenu}>ASA Officials</Link></li>
+            <li><Link to="/matches" onClick={toggleMenu}>Matches</Link></li>
+           <li><Link to="/officials" onClick={toggleMenu}>ASA Officials</Link></li>
             <li><Link to="/about" onClick={toggleMenu}>About</Link></li>
             <li><Link to="/donate" onClick={toggleMenu} className="donate-button">Donate</Link></li>
 
