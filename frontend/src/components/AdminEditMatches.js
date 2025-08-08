@@ -1,114 +1,87 @@
 // src/pages/AdminEditMatches.js
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const API_URL = 'https://soliat-fc-website.onrender.com/api/matches';
+
 const AdminEditMatches = () => {
-  const [groupedMatches, setGroupedMatches] = useState({});
-  const [weekKeys, setWeekKeys] = useState([]);
-  const [editingMatchId, setEditingMatchId] = useState(null);
-  const [editData, setEditData] = useState({
-    teamA: '',
-    teamB: '',
-    goalsA: '',
-    goalsB: '',
-    date: ''
-  });
+  const [matches, setMatches] = useState([]);
+  const [expandedWeek, setExpandedWeek] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const API_URL = 'https://soliat-fc-website.onrender.com/api/matches';
+  const token = localStorage.getItem('authToken'); // ✅ same token as MatchList
 
-  const fetchMatches = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(API_URL, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      const sorted = res.data.sort((a, b) => new Date(a.date) - new Date(b.date));
-      const adjusted = distributeMatches(sorted);
-      setGroupedMatches(adjusted.grouped);
-      setWeekKeys(adjusted.keys);
-    } catch (err) {
-      toast.error('Failed to fetch matches');
-    }
-  }, []);
-
+  // ✅ Fetch matches
   useEffect(() => {
-    fetchMatches();
-  }, [fetchMatches]);
-
-  const getWeekendDate = (baseDateStr) => {
-    const date = new Date(baseDateStr);
-    const day = date.getDay();
-    // If already Sat (6) or Sun (0), keep it. Else set to nearest Saturday
-    if (day === 6 || day === 0) {
-      return date.toISOString().slice(0, 10);
-    } else {
-      // Move to previous Saturday
-      const diff = day;
-      date.setDate(date.getDate() - diff + 6);
-      return date.toISOString().slice(0, 10);
-    }
-  };
-
-  const distributeMatches = (matchList) => {
-    const grouped = {};
-    matchList.forEach(match => {
-      let weekDate = getWeekendDate(match.date);
-
-      while (true) {
-        if (!grouped[weekDate]) grouped[weekDate] = [];
-
-        const teamAPlayed = grouped[weekDate].some(m => m.teamA === match.teamA || m.teamB === match.teamA);
-        const teamBPlayed = grouped[weekDate].some(m => m.teamA === match.teamB || m.teamB === match.teamB);
-
-        if (!teamAPlayed && !teamBPlayed) {
-          match.date = weekDate; // Ensure match uses weekend date
-          grouped[weekDate].push(match);
-          break;
-        } else {
-          const prev = new Date(weekDate);
-          prev.setDate(prev.getDate() - 7);
-          weekDate = prev.toISOString().slice(0, 10);
-        }
+    const fetchMatches = async () => {
+      try {
+        const res = await axios.get(API_URL, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const sorted = res.data.sort((a, b) => new Date(a.date) - new Date(b.date));
+        setMatches(sorted);
+      } catch (err) {
+        toast.error('Failed to fetch matches');
       }
-    });
+    };
+    fetchMatches();
+  }, [token]);
 
-    const keys = Object.keys(grouped).sort((a, b) => new Date(a) - new Date(b));
-    return { grouped, keys };
-  };
+  // ✅ Group matches into weeks of 6 (same as MatchList)
+  const { groupedMatches, weekKeys } = useMemo(() => {
+    const grouped = {};
+    for (let i = 0; i < matches.length; i++) {
+      const weekNumber = Math.floor(i / 6) + 1;
+      const weekKey = `Week ${weekNumber}`;
+      if (!grouped[weekKey]) grouped[weekKey] = [];
+      grouped[weekKey].push(matches[i]);
+    }
+    return { groupedMatches: grouped, weekKeys: Object.keys(grouped) };
+  }, [matches]);
 
-  const handleEdit = (match) => {
-    setEditingMatchId(match._id);
-    setEditData({
+  // ✅ Auto-select latest week
+  useEffect(() => {
+    if (!expandedWeek && weekKeys.length > 0) {
+      setExpandedWeek(weekKeys[weekKeys.length - 1]);
+    }
+  }, [weekKeys, expandedWeek]);
+
+  // ✅ Handle week change
+  const handleWeekChange = (e) => setExpandedWeek(e.target.value);
+
+  // ✅ Start editing
+  const handleEditClick = (match) => {
+    setEditingId(match._id);
+    setEditForm({
       teamA: match.teamA,
       teamB: match.teamB,
       goalsA: match.goalsA,
       goalsB: match.goalsB,
-      date: match.date
+      date: match.date.slice(0, 10)
     });
   };
 
+  // ✅ Handle input change
+  const handleChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  // ✅ Save changes
   const handleSave = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const updated = { ...editData, date: getWeekendDate(editData.date) };
-
-      await axios.put(`${API_URL}/${editingMatchId}`, updated, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const res = await axios.patch(`${API_URL}/${editingId}`, editForm, {
+        headers: { Authorization: `Bearer ${token}` }
       });
-
+      const updated = matches.map((m) => (m._id === editingId ? res.data : m));
+      const sorted = updated.sort((a, b) => new Date(a.date) - new Date(b.date));
+      setMatches(sorted);
+      setEditingId(null);
       toast.success('Match updated successfully');
-      fetchMatches();
-      setEditingMatchId(null);
     } catch (err) {
       toast.error('Failed to save match');
     } finally {
@@ -116,17 +89,15 @@ const AdminEditMatches = () => {
     }
   };
 
+  // ✅ Delete match
   const handleDelete = async (id) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       await axios.delete(`${API_URL}/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
+      setMatches(matches.filter((m) => m._id !== id));
       toast.success('Match deleted successfully');
-      fetchMatches();
     } catch (err) {
       toast.error('Failed to delete match');
     } finally {
@@ -135,111 +106,78 @@ const AdminEditMatches = () => {
   };
 
   return (
-    <div className="admin-match-manager" style={{ padding: '20px' }}>
+    <div style={{ padding: '1rem' }}>
       <ToastContainer />
-      <h2>Manage Matches</h2>
+      <h2>⚽ Manage Matches</h2>
 
-      {loading && <p style={{ color: 'blue' }}>Processing...</p>}
+      {weekKeys.length > 0 && (
+        <select
+          value={expandedWeek}
+          onChange={handleWeekChange}
+          style={{ marginBottom: '1rem', padding: '0.5rem', fontSize: '1rem' }}
+        >
+          {weekKeys.map((wk) => (
+            <option key={wk} value={wk}>
+              {wk}
+            </option>
+          ))}
+        </select>
+      )}
 
-      {weekKeys.length === 0 ? (
-        <p>No matches found.</p>
-      ) : (
-        weekKeys.map((week) => (
-          <div key={week} style={{ marginBottom: '2rem' }}>
-            <h3 style={{ borderBottom: '1px solid #333' }}>Week of {week}</h3>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {groupedMatches[week].map((match) => (
-                <li
-                  key={match._id}
-                  style={{
-                    marginBottom: '15px',
-                    padding: '10px',
-                    border: '1px solid #ccc',
-                    borderRadius: '5px'
-                  }}
-                >
-                  {editingMatchId === match._id ? (
-                    <div>
-                      <input
-                        type="text"
-                        value={editData.teamA}
-                        onChange={(e) =>
-                          setEditData({ ...editData, teamA: e.target.value })
-                        }
-                        placeholder="Team A"
-                      />
-                      <input
-                        type="number"
-                        value={editData.goalsA}
-                        onChange={(e) =>
-                          setEditData({ ...editData, goalsA: Number(e.target.value) })
-                        }
-                        placeholder="Goals A"
-                      />
-                      <span> - </span>
-                      <input
-                        type="number"
-                        value={editData.goalsB}
-                        onChange={(e) =>
-                          setEditData({ ...editData, goalsB: Number(e.target.value) })
-                        }
-                        placeholder="Goals B"
-                      />
-                      <input
-                        type="text"
-                        value={editData.teamB}
-                        onChange={(e) =>
-                          setEditData({ ...editData, teamB: e.target.value })
-                        }
-                        placeholder="Team B"
-                      />
-                      <input
-                        type="date"
-                        value={editData.date}
-                        onChange={(e) =>
-                          setEditData({ ...editData, date: e.target.value })
-                        }
-                        placeholder="Match Date"
-                      />
-                      <button
-                        onClick={handleSave}
-                        style={{ marginLeft: '10px' }}
-                        disabled={loading}
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingMatchId(null)}
-                        style={{ marginLeft: '10px' }}
-                        disabled={loading}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>
-                        <strong>{match.date}:</strong> {match.teamA} {match.goalsA} - {match.goalsB} {match.teamB}
-                      </span>
-                      <div>
-                        <button onClick={() => handleEdit(match)} disabled={loading}>
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(match._id)}
-                          style={{ marginLeft: '8px', color: 'red' }}
-                          disabled={loading}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
+      {expandedWeek && groupedMatches[expandedWeek] && (
+        <div>
+          <h3>{expandedWeek} Fixtures</h3>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gap: '1rem',
+              marginTop: '1rem'
+            }}
+          >
+            {groupedMatches[expandedWeek].map((match) => (
+              <div
+                key={match._id}
+                style={{
+                  border: '1px solid #ccc',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  backgroundColor: '#f9f9f9'
+                }}
+              >
+                {editingId === match._id ? (
+                  <>
+                    <input name="teamA" value={editForm.teamA} onChange={handleChange} />
+                    <input name="teamB" value={editForm.teamB} onChange={handleChange} />
+                    <input name="goalsA" value={editForm.goalsA} onChange={handleChange} type="number" />
+                    <input name="goalsB" value={editForm.goalsB} onChange={handleChange} type="number" />
+                    <input name="date" value={editForm.date} onChange={handleChange} type="date" />
+                    <button onClick={handleSave} disabled={loading} style={{ marginTop: '0.5rem' }}>
+                      Save
+                    </button>
+                    <button onClick={() => setEditingId(null)} style={{ marginLeft: '0.5rem' }}>
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h4>{match.teamA} vs {match.teamB}</h4>
+                    <p><strong>Score:</strong> {match.goalsA} - {match.goalsB}</p>
+                    <p><strong>Date:</strong> {new Date(match.date).toLocaleDateString()}</p>
+                    <button onClick={() => handleEditClick(match)} disabled={loading}>Edit</button>
+                    <button
+                      onClick={() => handleDelete(match._id)}
+                      style={{ marginLeft: '0.5rem', color: 'red' }}
+                      disabled={loading}
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            ))}
           </div>
-        ))
+        </div>
       )}
     </div>
   );
