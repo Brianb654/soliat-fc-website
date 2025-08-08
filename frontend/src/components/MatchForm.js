@@ -32,8 +32,15 @@ const logoMap = {
 
 const BASE_URL = 'https://soliat-fc-website.onrender.com';
 
+function getMatchKey(teamA, teamB) {
+  // Sort team names to make order irrelevant
+  const sorted = [teamA.toLowerCase(), teamB.toLowerCase()].sort();
+  return sorted.join('_');
+}
+
 const MatchForm = () => {
   const [teams, setTeams] = useState([]);
+  const [matches, setMatches] = useState([]); // <-- store existing matches here
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [bulkMode, setBulkMode] = useState(false);
@@ -46,6 +53,7 @@ const MatchForm = () => {
     dayPlayed: '',
   });
 
+  // Fetch teams
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -60,10 +68,30 @@ const MatchForm = () => {
     fetchTeams();
   }, []);
 
+  // Fetch existing matches
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/matches`);
+        setMatches(res.data);
+      } catch (err) {
+        console.error('❌ Failed to load matches:', err);
+      }
+    };
+    fetchMatches();
+  }, []);
+
+  // Check if match pair exists in an array of matches (ignoring order)
+  const doesMatchExist = (teamA, teamB, matchesArray) => {
+    const newKey = getMatchKey(teamA, teamB);
+    return matchesArray.some(m => getMatchKey(m.teamA, m.teamB) === newKey);
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Bulk add with duplicate check (against existing matches + bulk list)
   const handleAddToBulk = () => {
     const { teamA, teamB, goalsA, goalsB, dayPlayed } = formData;
 
@@ -72,6 +100,11 @@ const MatchForm = () => {
     }
     if (teamA === teamB) {
       return setError('❌ A team cannot play against itself.');
+    }
+
+    // Check if already in bulkMatches or existing matches
+    if (doesMatchExist(teamA, teamB, [...matches, ...bulkMatches])) {
+      return setError('❌ This match between these teams already exists or is in the bulk list.');
     }
 
     setBulkMatches([
@@ -105,27 +138,45 @@ const MatchForm = () => {
       });
       setMessage(`✅ Submitted ${bulkMatches.length} matches successfully.`);
       setBulkMatches([]);
+      // Refresh matches after submit
+      const res = await axios.get(`${BASE_URL}/api/matches`);
+      setMatches(res.data);
     } catch (err) {
       console.error('❌ Bulk submission failed:', err);
       setError('❌ Failed to submit bulk matches.');
     }
   };
 
+  // Single submit with duplicate check
   const handleSubmitSingle = async (e) => {
     e.preventDefault();
     setMessage('');
     setError('');
+
+    const { teamA, teamB, goalsA, goalsB, dayPlayed } = formData;
+
+    if (!teamA || !teamB || goalsA === '' || goalsB === '') {
+      return setError('❌ Please fill all fields.');
+    }
+    if (teamA === teamB) {
+      return setError('❌ A team cannot play against itself.');
+    }
+
+    // Check for duplicate in existing matches
+    if (doesMatchExist(teamA, teamB, matches)) {
+      return setError('❌ A match between these teams already exists.');
+    }
 
     const token = localStorage.getItem('token');
     if (!token) return setError('❌ You must be logged in.');
 
     try {
       const payload = {
-        teamA: formData.teamA,
-        teamB: formData.teamB,
-        goalsA: Number(formData.goalsA),
-        goalsB: Number(formData.goalsB),
-        dayPlayed: formData.dayPlayed || new Date().toISOString().split('T')[0],
+        teamA,
+        teamB,
+        goalsA: Number(goalsA),
+        goalsB: Number(goalsB),
+        dayPlayed: dayPlayed || new Date().toISOString().split('T')[0],
       };
 
       await axios.post(`${BASE_URL}/api/matches`, payload, {
@@ -134,6 +185,10 @@ const MatchForm = () => {
 
       setMessage('✅ Match submitted successfully!');
       setFormData({ teamA: '', teamB: '', goalsA: '', goalsB: '', dayPlayed: '' });
+
+      // Refresh matches after submit
+      const res = await axios.get(`${BASE_URL}/api/matches`);
+      setMatches(res.data);
     } catch (err) {
       console.error('❌ Submission Error:', err);
       setError(err.response?.data?.message || '❌ Failed to submit match.');
@@ -142,7 +197,7 @@ const MatchForm = () => {
 
   return (
     <div className="page-container">
-      
+
       {/* Bulk List Card */}
       {bulkMode && (
         <div className="card">
