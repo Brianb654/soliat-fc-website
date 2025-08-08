@@ -235,5 +235,76 @@ router.delete('/:id', protect, isEditorOrAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error during match deletion' });
   }
 });
+// Bulk create match results
+router.post('/bulk', protect, isEditorOrAdmin, async (req, res) => {
+  try {
+    const matchList = req.body;
+
+    if (!Array.isArray(matchList) || matchList.length === 0) {
+      return res.status(400).json({ message: 'No matches submitted' });
+    }
+
+    for (const match of matchList) {
+      const { homeTeam, awayTeam, homeScore, awayScore, date } = match;
+
+      // Check if teams exist
+      const home = await Team.findOne({ name: homeTeam });
+      const away = await Team.findOne({ name: awayTeam });
+
+      if (!home || !away) {
+        return res.status(404).json({ message: 'Team not found' });
+      }
+
+      // Prevent duplicate matches for the same date and teams
+      const existingMatch = await Match.findOne({
+        homeTeam,
+        awayTeam,
+        date,
+      });
+
+      if (existingMatch) {
+        continue; // Skip duplicate
+      }
+
+      const newMatch = new Match({
+        homeTeam,
+        awayTeam,
+        homeScore,
+        awayScore,
+        date,
+      });
+
+      await newMatch.save();
+
+      // Update home team
+      home.played += 1;
+      home.goalsFor += homeScore;
+      home.goalsAgainst += awayScore;
+      if (homeScore > awayScore) home.won += 1;
+      else if (homeScore === awayScore) home.drawn += 1;
+      else home.lost += 1;
+      home.points = home.won * 3 + home.drawn;
+      home.goalDifference = home.goalsFor - home.goalsAgainst;
+      await home.save();
+
+      // Update away team
+      away.played += 1;
+      away.goalsFor += awayScore;
+      away.goalsAgainst += homeScore;
+      if (awayScore > homeScore) away.won += 1;
+      else if (homeScore === awayScore) away.drawn += 1;
+      else away.lost += 1;
+      away.points = away.won * 3 + away.drawn;
+      away.goalDifference = away.goalsFor - away.goalsAgainst;
+      await away.save();
+    }
+
+    res.status(201).json({ message: 'Bulk matches added successfully' });
+  } catch (error) {
+    console.error('❌ Bulk submission error:', error);
+    res.status(500).json({ message: 'Server error during bulk match upload' });
+  }
+});
+
 
 module.exports = router;
