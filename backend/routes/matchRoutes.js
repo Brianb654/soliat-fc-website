@@ -235,76 +235,101 @@ router.delete('/:id', protect, isEditorOrAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error during match deletion' });
   }
 });
-// Bulk create match results
+// Bulk create match results — POST /api/matches/bulk
 router.post('/bulk', protect, isEditorOrAdmin, async (req, res) => {
   try {
-    const matchList = req.body;
+    const matches = req.body;
 
-    if (!Array.isArray(matchList) || matchList.length === 0) {
+    if (!Array.isArray(matches) || matches.length === 0) {
       return res.status(400).json({ message: 'No matches submitted' });
     }
 
-    for (const match of matchList) {
-      const { homeTeam, awayTeam, homeScore, awayScore, date } = match;
+    // Validate and normalize input, map to schema fields
+    const preparedMatches = [];
+    for (const m of matches) {
+      const { teamA, teamB, goalsA, goalsB, date } = m;
 
-      // Check if teams exist
-      const home = await Team.findOne({ name: homeTeam });
-      const away = await Team.findOne({ name: awayTeam });
-
-      if (!home || !away) {
-        return res.status(404).json({ message: 'Team not found' });
+      if (!teamA || !teamB || goalsA == null || goalsB == null) {
+        return res.status(400).json({ message: 'All fields required for each match' });
       }
 
-      // Prevent duplicate matches for the same date and teams
-      const existingMatch = await Match.findOne({
-        homeTeam,
-        awayTeam,
-        date,
-      });
-
-      if (existingMatch) {
-        continue; // Skip duplicate
+      if (teamA.trim() === teamB.trim()) {
+        return res.status(400).json({ message: 'Teams must be different' });
       }
 
-      const newMatch = new Match({
-        homeTeam,
-        awayTeam,
-        homeScore,
-        awayScore,
-        date,
+      preparedMatches.push({
+        teamA: teamA.trim(),
+        teamB: teamB.trim(),
+        goalsA,
+        goalsB,
+        date: date ? new Date(date) : new Date(),
       });
-
-      await newMatch.save();
-
-      // Update home team
-      home.played += 1;
-      home.goalsFor += homeScore;
-      home.goalsAgainst += awayScore;
-      if (homeScore > awayScore) home.won += 1;
-      else if (homeScore === awayScore) home.drawn += 1;
-      else home.lost += 1;
-      home.points = home.won * 3 + home.drawn;
-      home.goalDifference = home.goalsFor - home.goalsAgainst;
-      await home.save();
-
-      // Update away team
-      away.played += 1;
-      away.goalsFor += awayScore;
-      away.goalsAgainst += homeScore;
-      if (awayScore > homeScore) away.won += 1;
-      else if (homeScore === awayScore) away.drawn += 1;
-      else away.lost += 1;
-      away.points = away.won * 3 + away.drawn;
-      away.goalDifference = away.goalsFor - away.goalsAgainst;
-      await away.save();
     }
 
-    res.status(201).json({ message: 'Bulk matches added successfully' });
+    // Filter out duplicates already in DB
+    const filteredMatches = [];
+    for (const match of preparedMatches) {
+      const exists = await Match.findOne({
+        teamA: match.teamA,
+        teamB: match.teamB,
+        goalsA: match.goalsA,
+        goalsB: match.goalsB,
+        date: match.date,
+      });
+      if (!exists) filteredMatches.push(match);
+    }
+
+    if (filteredMatches.length === 0) {
+      return res.status(409).json({ message: 'All matches already exist' });
+    }
+
+    // Insert many at once
+    const insertedMatches = await Match.insertMany(filteredMatches);
+
+    // Update team stats for all inserted matches
+    for (const match of insertedMatches) {
+      const teamAData = await Team.findOne({ name: { $regex: new RegExp(`^${match.teamA}$`, 'i') } });
+      const teamBData = await Team.findOne({ name: { $regex: new RegExp(`^${match.teamB}$`, 'i') } });
+
+      if (!teamAData || !teamBData) {
+        // Optional: could decide to rollback inserted matches here
+        console.warn(`Teams not found for match ${match._id}`);
+        continue;
+      }
+
+      teamAData.goalsFor += match.goalsA;
+      teamAData.goalsAgainst += match.goalsB;
+      teamBData.goalsFor += match.goalsB;
+      teamBData.goalsAgainst += match.goalsA;
+
+      teamAData.goalDifference = teamAData.goalsFor - teamAData.goalsAgainst;
+      teamBData.goalDifference = teamBData.goalsFor - teamBData.goalsAgainst;
+
+      if (match.goalsA > match.goalsB) {
+        teamAData.points += 3;
+        teamAData.wins = (teamAData.wins || 0) + 1;
+        teamBData.losses = (teamBData.losses || 0) + 1;
+      } else if (match.goalsB > match.goalsA) {
+        teamBData.points += 3;
+        teamBData.wins = (teamBData.wins || 0) + 1;
+        teamAData.losses = (teamAData.losses || 0) + 1;
+      } else {
+        teamAData.points += 1;
+        teamBData.points += 1;
+        teamAData.draws = (teamAData.draws || 0) + 1;
+        teamBData.draws = (teamBData.draws || 0) + 1;
+      }
+
+      teamAData.matchesPlayed = (teamAData.matchesPlayed || 0) + 1;
+      teamBData.matchesPlayed = (teamBData.matchesPlayed || 0) + 1;
+
+      await teamAData.save();
+      await teamBData.save();
+    }
+
+    res.status(201).json({ message: `Bulk insert successful: ${insertedMatches.length} matches added.` });
   } catch (error) {
     console.error('❌ Bulk submission error:', error);
     res.status(500).json({ message: 'Server error during bulk match upload' });
   }
 });
-
-
-module.exports = router;
