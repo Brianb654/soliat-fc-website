@@ -29,44 +29,30 @@ app.use(cors({
   credentials: true,
 }));
 
-// ✅ Middleware to parse JSON requests
+// Middleware to parse JSON
 app.use(express.json());
 
-// ✅ MongoDB Connection
+// MongoDB connect
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
-// ✅ Root route
-app.get('/', (req, res) => {
-  res.send('🌍 Soliat FC Backend is running');
-});
+// Require routes
+const teamRoutes = require('./routes/teamRoutes');
+const matchRoutes = require('./routes/matchRoutes');
+const newsRoutes = require('./routes/newsRoutes');
+const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
-// 🧪 Simple test endpoint
-app.post('/api/test', (req, res) => {
-  console.log('🔍 Test body:', req.body);
-  res.json({ received: req.body });
-});
+// Use routes
+app.use('/api/teams', teamRoutes);
+app.use('/api/matches', matchRoutes);
+app.use('/api/news', newsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
-// ✅ API Routes
-app.use('/api/teams', require('./routes/teamRoutes'));
-app.use('/api/matches', require('./routes/matchRoutes')); // ✅ Matches route is here
-app.use('/api/news', require('./routes/newsRoutes'));
-app.use('/api/auth', require('./routes/authRoutes'));     // For future user auth
-app.use('/api/admin', require('./routes/adminRoutes'));   // Admins + editors
+// 404 fallback and error handler here...
 
-// ❌ 404 Fallback
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-// ❗ Global Error Catcher
-app.use((err, req, res, next) => {
-  console.error('❌ Error stack:', err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
-
-// ✅ Start your server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);

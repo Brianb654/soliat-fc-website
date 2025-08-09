@@ -333,3 +333,5 @@ router.post('/bulk', protect, isEditorOrAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error during bulk match upload' });
   }
 });
+ 
+module.exports = router;
