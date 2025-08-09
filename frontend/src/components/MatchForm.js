@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; 
 import axios from 'axios';
 import './MatchForm.css';
 
@@ -116,6 +116,11 @@ const MatchForm = () => {
     setError('');
   };
 
+  // Remove bulk match by index
+  const handleRemoveBulkMatch = (indexToRemove) => {
+    setBulkMatches(bulkMatches.filter((_, idx) => idx !== indexToRemove));
+  };
+
   const handleSubmitBulk = async () => {
     if (bulkMatches.length === 0) {
       return setError('❌ No matches to submit.');
@@ -124,7 +129,7 @@ const MatchForm = () => {
     const token = localStorage.getItem('token');
     if (!token) return setError('❌ You must be logged in.');
 
-    // Remove duplicates in bulk matches before submission
+    // Remove duplicates before submission
     const seen = new Set();
     const uniqueBulk = bulkMatches.filter((match) => {
       const key = getMatchKey(match.teamA, match.teamB, match.date);
@@ -202,6 +207,13 @@ const MatchForm = () => {
               bulkMatches.map((m, idx) => (
                 <div key={idx} className="bulk-item">
                   {m.teamA} {m.goalsA} - {m.goalsB} {m.teamB} ({m.date})
+                  <button
+                    className="remove-bulk-btn"
+                    onClick={() => handleRemoveBulkMatch(idx)}
+                    title="Remove match"
+                  >
+                    ×
+                  </button>
                 </div>
               ))
             ) : (

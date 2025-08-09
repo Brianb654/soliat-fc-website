@@ -71,3 +71,38 @@
   color: #777;
   text-align: right;
 }
+/* remove from list*/
+.bulk-list {
+  margin-top: 1rem;
+}
+
+.bulk-item {
+  display: flex;
+  justify-content: space-between; /* pushes x to far right */
+  align-items: center;
+  padding: 4px 0;
+  font-size: 16px;
+}
+
+.bulk-item-text {
+  flex-grow: 1;
+  margin-right: 15px; /* space between text and X */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.remove-bulk-btn {
+  all: unset; /* resets all button styles: no border, no bg, no padding */
+  color: black;
+  font-size: 18px; /* medium size */
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+  transition: color 0.2s ease;
+  padding: 0 5px;
+}
+
+.remove-bulk-btn:hover {
+  color: #555; /* subtle dark gray on hover */
+}
