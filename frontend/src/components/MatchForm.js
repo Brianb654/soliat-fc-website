@@ -32,9 +32,9 @@ const logoMap = {
 
 const BASE_URL = 'https://soliat-fc-website.onrender.com';
 
-function getMatchKey(teamA, teamB) {
+function getMatchKey(teamA, teamB, date) {
   const sorted = [teamA.toLowerCase(), teamB.toLowerCase()].sort();
-  return sorted.join('_');
+  return `${sorted.join('_')}_${date}`;
 }
 
 const MatchForm = () => {
@@ -52,7 +52,6 @@ const MatchForm = () => {
     dayPlayed: '',
   });
 
-  // Fetch teams
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -67,7 +66,6 @@ const MatchForm = () => {
     fetchTeams();
   }, []);
 
-  // Fetch matches
   useEffect(() => {
     const fetchMatches = async () => {
       try {
@@ -80,18 +78,18 @@ const MatchForm = () => {
     fetchMatches();
   }, []);
 
-  const doesMatchExist = (teamA, teamB, matchesArray) => {
-    const newKey = getMatchKey(teamA, teamB);
-    return matchesArray.some(m => getMatchKey(m.teamA, m.teamB) === newKey);
+  const doesMatchExist = (teamA, teamB, date, matchesArray) => {
+    const key = getMatchKey(teamA, teamB, date);
+    return matchesArray.some(m => getMatchKey(m.teamA, m.teamB, m.date) === key);
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Add to bulk
   const handleAddToBulk = () => {
     const { teamA, teamB, goalsA, goalsB, dayPlayed } = formData;
+    const matchDate = dayPlayed || new Date().toISOString().split('T')[0];
 
     if (!teamA || !teamB || goalsA === '' || goalsB === '') {
       return setError('❌ Please fill all fields.');
@@ -99,8 +97,8 @@ const MatchForm = () => {
     if (teamA === teamB) {
       return setError('❌ A team cannot play against itself.');
     }
-    if (doesMatchExist(teamA, teamB, [...matches, ...bulkMatches])) {
-      return setError('❌ This match between these teams already exists or is in the bulk list.');
+    if (doesMatchExist(teamA, teamB, matchDate, [...matches, ...bulkMatches])) {
+      return setError('❌ This match already exists or is in the bulk list.');
     }
 
     setBulkMatches([
@@ -110,7 +108,7 @@ const MatchForm = () => {
         teamB,
         goalsA: Number(goalsA),
         goalsB: Number(goalsB),
-        date: dayPlayed || new Date().toISOString().split('T')[0], // ✅ use "date" for backend
+        date: matchDate,
       },
     ]);
 
@@ -118,19 +116,28 @@ const MatchForm = () => {
     setError('');
   };
 
-  // Submit bulk
   const handleSubmitBulk = async () => {
     if (bulkMatches.length === 0) {
       return setError('❌ No matches to submit.');
     }
+
     const token = localStorage.getItem('token');
     if (!token) return setError('❌ You must be logged in.');
 
+    // Remove duplicates in bulk matches before submission
+    const seen = new Set();
+    const uniqueBulk = bulkMatches.filter((match) => {
+      const key = getMatchKey(match.teamA, match.teamB, match.date);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
     try {
-      await axios.post(`${BASE_URL}/api/matches/bulk`, { matches: bulkMatches }, {
+      await axios.post(`${BASE_URL}/api/matches/bulk`, uniqueBulk, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setMessage(`✅ Submitted ${bulkMatches.length} matches successfully.`);
+      setMessage(`✅ Submitted ${uniqueBulk.length} matches successfully.`);
       setBulkMatches([]);
       const res = await axios.get(`${BASE_URL}/api/matches`);
       setMatches(res.data);
@@ -140,13 +147,13 @@ const MatchForm = () => {
     }
   };
 
-  // Submit single
   const handleSubmitSingle = async (e) => {
     e.preventDefault();
     setMessage('');
     setError('');
 
     const { teamA, teamB, goalsA, goalsB, dayPlayed } = formData;
+    const matchDate = dayPlayed || new Date().toISOString().split('T')[0];
 
     if (!teamA || !teamB || goalsA === '' || goalsB === '') {
       return setError('❌ Please fill all fields.');
@@ -154,7 +161,7 @@ const MatchForm = () => {
     if (teamA === teamB) {
       return setError('❌ A team cannot play against itself.');
     }
-    if (doesMatchExist(teamA, teamB, matches)) {
+    if (doesMatchExist(teamA, teamB, matchDate, matches)) {
       return setError('❌ A match between these teams already exists.');
     }
 
@@ -167,7 +174,7 @@ const MatchForm = () => {
         teamB,
         goalsA: Number(goalsA),
         goalsB: Number(goalsB),
-        date: dayPlayed || new Date().toISOString().split('T')[0], // ✅ use "date" here too
+        date: matchDate,
       };
 
       await axios.post(`${BASE_URL}/api/matches`, payload, {
@@ -209,7 +216,14 @@ const MatchForm = () => {
 
       <div className="card">
         <h2 className="form-title">🏆 Update League Table</h2>
-        <button className="mode-toggle" onClick={() => setBulkMode(!bulkMode)}>
+        <button
+          className="mode-toggle"
+          onClick={() => {
+            setBulkMode(!bulkMode);
+            setMessage('');
+            setError('');
+          }}
+        >
           {bulkMode ? 'Switch to Single Match Mode' : 'Switch to Bulk Entry Mode'}
         </button>
 
@@ -230,7 +244,16 @@ const MatchForm = () => {
               )}
             </div>
 
-            <input type="number" name="goalsA" placeholder="Goals A" value={formData.goalsA} onChange={handleChange} required />
+            <input
+              type="number"
+              name="goalsA"
+              placeholder="Goals A"
+              value={formData.goalsA}
+              onChange={handleChange}
+              required
+              min="0"
+              step="1"
+            />
 
             <div className="dropdown-group">
               <select name="teamB" value={formData.teamB} onChange={handleChange} required>
@@ -244,9 +267,24 @@ const MatchForm = () => {
               )}
             </div>
 
-            <input type="number" name="goalsB" placeholder="Goals B" value={formData.goalsB} onChange={handleChange} required />
+            <input
+              type="number"
+              name="goalsB"
+              placeholder="Goals B"
+              value={formData.goalsB}
+              onChange={handleChange}
+              required
+              min="0"
+              step="1"
+            />
 
-            <input type="date" name="dayPlayed" value={formData.dayPlayed} onChange={handleChange} />
+            <input
+              type="date"
+              name="dayPlayed"
+              value={formData.dayPlayed}
+              onChange={handleChange}
+              required
+            />
           </div>
 
           {!bulkMode ? (

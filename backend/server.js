@@ -4,8 +4,22 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const os = require('os');
 
 const app = express();
+
+// Utility to get local IP address
+function getLocalIP() {
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        return net.address;
+      }
+    }
+  }
+  return 'localhost';
+}
 
 // ✅ CORS Setup (local + Render/Vercel frontend support + mobile/Postman)
 app.use(cors({
@@ -49,11 +63,15 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/admin', admininRoutes);
 
 // 404 fallback and error handler here...
 
 const PORT = process.env.PORT || 5000;
+const localIP = getLocalIP();
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`🚀 Server is running!`);
+  console.log(`- Local:   http://localhost:${PORT}`);
+  console.log(`- On LAN:  http://${localIP}:${PORT}`);
 });
