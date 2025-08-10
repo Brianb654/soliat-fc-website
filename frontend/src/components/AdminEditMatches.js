@@ -42,25 +42,21 @@ const AdminEditMatches = () => {
         const processed = res.data.map((match, index, arr) => {
           let dateObj = new Date(match.date);
           if (isNaN(dateObj)) {
-            // fallback refDate: previous match date or today
             let refDate = index > 0 ? new Date(arr[index - 1].date) : new Date();
             if (isNaN(refDate)) refDate = new Date();
             const lastSunday = getLastSunday(refDate);
             return { ...match, date: lastSunday.toISOString() };
           }
 
-          // If Mon-Fri, reset to last Sunday
           const day = dateObj.getDay();
           if (day >= 1 && day <= 5) {
             const lastSunday = getLastSunday(dateObj);
             return { ...match, date: lastSunday.toISOString() };
           }
 
-          // Sat or Sun keep as is
           return match;
         });
 
-        // Sort ascending by date
         const sorted = processed.sort((a, b) => new Date(a.date) - new Date(b.date));
         setMatches(sorted);
       } catch (err) {
@@ -84,13 +80,12 @@ const AdminEditMatches = () => {
     if (token) fetchTeams();
   }, [token]);
 
-  // Group matches by relative week number starting from earliest match week Monday baseline
+  // Fixed grouping: push matches to next week if team already has match in current week
   const { groupedMatches, weekKeys } = useMemo(() => {
     if (matches.length === 0) return { groupedMatches: {}, weekKeys: [] };
 
     const sortedMatches = [...matches].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Get Monday of first match week as baseline
     const firstDate = new Date(sortedMatches[0].date);
     const startOfWeekFirst = new Date(firstDate);
     startOfWeekFirst.setHours(0, 0, 0, 0);
@@ -98,39 +93,49 @@ const AdminEditMatches = () => {
     const diffToMonday = (day === 0 ? -6 : 1) - day; // Sunday(0) goes back 6 days, else adjust to Monday
     startOfWeekFirst.setDate(startOfWeekFirst.getDate() + diffToMonday);
 
+    const getWeekKey = (num) => `Week ${num}`;
+
+    const matchesQueue = [...sortedMatches];
     const grouped = {};
+    const teamsInWeek = {};
 
-    // Track teams per week to ensure 1 match per team per week
-    const teamWeekTracker = {};
+    const ensureWeekData = (weekNum) => {
+      if (!grouped[getWeekKey(weekNum)]) grouped[getWeekKey(weekNum)] = [];
+      if (!teamsInWeek[weekNum]) teamsInWeek[weekNum] = new Set();
+    };
 
-    for (const match of sortedMatches) {
+    while (matchesQueue.length > 0) {
+      const match = matchesQueue.shift();
+
       const matchDate = new Date(match.date);
       matchDate.setHours(0, 0, 0, 0);
-
       const diffMs = matchDate - startOfWeekFirst;
       const diffDays = diffMs / (1000 * 60 * 60 * 24);
-      const relativeWeekNumber = Math.floor(diffDays / 7) + 1;
-      const weekKey = `Week ${relativeWeekNumber}`;
+      let matchWeekNum = Math.floor(diffDays / 7) + 1;
 
-      // Check if teams already have a match this week (skip or add anyway? here we add all but you can filter if needed)
-      const teamKeyA = `${match.teamA}-${weekKey}`;
-      const teamKeyB = `${match.teamB}-${weekKey}`;
+      let weekNumToTry = matchWeekNum;
 
-      if (!teamWeekTracker[teamKeyA] && !teamWeekTracker[teamKeyB]) {
-        if (!grouped[weekKey]) grouped[weekKey] = [];
-        grouped[weekKey].push(match);
-        teamWeekTracker[teamKeyA] = true;
-        teamWeekTracker[teamKeyB] = true;
-      } else {
-        // Optionally: handle duplicate matches per team per week if you want
-        if (!grouped[weekKey]) grouped[weekKey] = [];
-        grouped[weekKey].push(match);
+      let placed = false;
+      while (!placed) {
+        ensureWeekData(weekNumToTry);
+
+        const teamsThisWeek = teamsInWeek[weekNumToTry];
+        const matchesThisWeek = grouped[getWeekKey(weekNumToTry)];
+
+        if (!teamsThisWeek.has(match.teamA) && !teamsThisWeek.has(match.teamB)) {
+          matchesThisWeek.push(match);
+          teamsThisWeek.add(match.teamA);
+          teamsThisWeek.add(match.teamB);
+          placed = true;
+        } else {
+          weekNumToTry++;
+        }
       }
     }
 
     // Sort matches inside each week by date ascending
-    for (const key in grouped) {
-      grouped[key].sort((a, b) => new Date(a.date) - new Date(b.date));
+    for (const wk in grouped) {
+      grouped[wk].sort((a, b) => new Date(a.date) - new Date(b.date));
     }
 
     const sortedWeekKeys = Object.keys(grouped).sort((a, b) => {
@@ -185,7 +190,6 @@ const AdminEditMatches = () => {
     try {
       setLoading(true);
 
-      // If user didn't change date, or it's a weekday, replace with last Sunday
       let saveDate = editForm.date;
       if (saveDate) {
         const d = new Date(saveDate);
