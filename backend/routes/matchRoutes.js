@@ -85,13 +85,13 @@ router.post('/', protect, isEditorOrAdmin, async (req, res) => {
   }
 });
 
-// ✏️ PUT update match result
+// ✏️ PUT update match result with date handling
 router.put('/:id', protect, isEditorOrAdmin, async (req, res) => {
   try {
     const match = await Match.findById(req.params.id);
     if (!match) return res.status(404).json({ message: 'Match not found' });
 
-    const { teamA, teamB, goalsA, goalsB } = req.body;
+    const { teamA, teamB, goalsA, goalsB, date } = req.body;
 
     if (!teamA || !teamB || goalsA == null || goalsB == null) {
       return res.status(400).json({ message: 'All fields are required' });
@@ -132,11 +132,21 @@ router.put('/:id', protect, isEditorOrAdmin, async (req, res) => {
     await teamAOld.save();
     await teamBOld.save();
 
-    // Update match
+    // Update match fields including date
     match.teamA = teamA.trim();
     match.teamB = teamB.trim();
     match.goalsA = goalsA;
     match.goalsB = goalsB;
+
+    if (date) {
+      const newDate = new Date(date);
+      if (!isNaN(newDate)) {
+        match.date = newDate;
+      } else {
+        return res.status(400).json({ message: 'Invalid date format' });
+      }
+    }
+
     await match.save();
 
     // Apply new result
@@ -235,6 +245,7 @@ router.delete('/:id', protect, isEditorOrAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error during match deletion' });
   }
 });
+
 // Bulk create match results — POST /api/matches/bulk
 router.post('/bulk', protect, isEditorOrAdmin, async (req, res) => {
   try {
@@ -333,5 +344,5 @@ router.post('/bulk', protect, isEditorOrAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error during bulk match upload' });
   }
 });
- 
+
 module.exports = router;

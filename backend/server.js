@@ -51,6 +51,12 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
+  
+ app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+ 
+
 // Require routes
 const teamRoutes = require('./routes/teamRoutes');
 const matchRoutes = require('./routes/matchRoutes');
@@ -63,7 +69,7 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/admin', admininRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 fallback and error handler here...
 
