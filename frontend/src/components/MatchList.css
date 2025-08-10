@@ -71,68 +71,64 @@
   color: #777;
   text-align: right;
 }
-/* remove from list*/
-.bulk-list {
+
+/* Download buttons container */
+.download-buttons {
   margin-top: 1rem;
-}
-
-.bulk-item {
   display: flex;
-  justify-content: space-between; /* pushes x to far right */
-  align-items: center;
-  padding: 4px 0;
-  font-size: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem; /* Horizontal spacing between groups */
 }
 
-.bulk-item-text {
-  flex-grow: 1;
-  margin-right: 15px; /* space between text and X */
+.download-buttons > div {
+  display: flex;
+  gap: 1rem; /* Spacing between individual buttons */
+  flex-wrap: wrap;
+}
+
+/* Download buttons */
+.download-buttons button {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  transition: background-color 0.3s ease, box-shadow 0.2s ease;
+  min-width: 110px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.remove-bulk-btn {
-  all: unset; /* resets all button styles: no border, no bg, no padding */
-  color: black;
-  font-size: 18px; /* medium size */
-  cursor: pointer;
   user-select: none;
-  line-height: 1;
-  transition: color 0.2s ease;
-  padding: 0 5px;
 }
 
-.remove-bulk-btn:hover {
-  color: #555; /* subtle dark gray on hover */
-}
-/* Bulk date input container */
-.bulk-date-container {
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.download-buttons button:hover:not(:disabled) {
+  background-color: #0056b3;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
 }
 
-/* Bulk date label */
-.bulk-date-container label {
-  font-weight: 500;
-  font-size: 1rem;
-  color: #333;
+.download-buttons button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+  border-color: #bbb;
 }
 
-/* Bulk date input */
-.bulk-date-container input[type="date"] {
-  padding: 6px 10px;
-  font-size: 1rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  max-width: 180px;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
-}
-
-.bulk-date-container input[type="date"]:focus {
-  border-color: #007BFF;
-  outline: none;
+/* Responsive tweaks */
+@media (max-width: 480px) {
+  .download-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .download-buttons > div {
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  .download-buttons button {
+    min-width: auto;
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 0.4rem 0;
+  }
 }

@@ -1,5 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react'; 
 import axios from 'axios';
+import html2canvas from 'html2canvas';
+import './MatchList.css'; // Your CSS file
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/matches';
 
@@ -16,11 +18,12 @@ const getLastSunday = (refDate = new Date()) => {
 const MatchList = () => {
   const [matches, setMatches] = useState([]);
   const [expandedWeek, setExpandedWeek] = useState(null);
+  const fullTableRef = useRef(null);
+  const weekTableRef = useRef(null);
 
   useEffect(() => {
     axios.get(API_URL)
       .then(res => {
-        // Adjust match dates: if weekday (Mon-Fri), change to last Sunday
         const adjusted = res.data.map(match => {
           const dateObj = new Date(match.date);
           if (isNaN(dateObj)) return match;
@@ -33,14 +36,13 @@ const MatchList = () => {
           return match;
         });
 
-        // Sort by date ascending
         const sorted = adjusted.sort((a, b) => new Date(a.date) - new Date(b.date));
         setMatches(sorted);
       })
       .catch(err => console.error('Error fetching matches:', err));
   }, []);
 
-  // Group matches by relative week number starting from earliest match week Monday baseline
+  // Group matches by week
   const { groupedMatches, weekKeys } = useMemo(() => {
     if (matches.length === 0) return { groupedMatches: {}, weekKeys: [] };
 
@@ -50,7 +52,7 @@ const MatchList = () => {
     const startOfWeekFirst = new Date(firstDate);
     startOfWeekFirst.setHours(0, 0, 0, 0);
     const day = startOfWeekFirst.getDay();
-    const diffToMonday = (day === 0 ? -6 : 1) - day; // Sunday(0) goes back 6 days, else adjust to Monday
+    const diffToMonday = (day === 0 ? -6 : 1) - day;
     startOfWeekFirst.setDate(startOfWeekFirst.getDate() + diffToMonday);
 
     const grouped = {};
@@ -90,19 +92,76 @@ const MatchList = () => {
 
   const handleWeekChange = (e) => setExpandedWeek(e.target.value);
 
+  // -- DOWNLOAD FUNCTIONS (defined inside component) --
+
+  // Converts matches array to CSV string
+  const convertMatchesToCSV = (matches) => {
+    const headers = ['Date', 'Team A', 'Goals A', 'Goals B', 'Team B'];
+    const rows = matches.map(m => [
+      new Date(m.date).toLocaleDateString(),
+      m.teamA,
+      m.goalsA,
+      m.goalsB,
+      m.teamB,
+    ]);
+    return [headers, ...rows].map(r => r.join(',')).join('\n');
+  };
+
+  // Trigger CSV download helper
+  const downloadCSV = (csvString, filename) => {
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Download all matches CSV
+  const downloadFullMatchesCSV = () => {
+    const csv = convertMatchesToCSV(matches);
+    downloadCSV(csv, `all_matches_${new Date().toISOString().slice(0, 10)}.csv`);
+  };
+
+  // Download all matches as image
+  const downloadFullMatchesImage = () => {
+    if (!fullTableRef.current) return;
+    html2canvas(fullTableRef.current).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `all_matches_${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  };
+
+  // Download current week CSV
+  const downloadWeekMatchesCSV = () => {
+    if (!expandedWeek || !groupedMatches[expandedWeek]) return;
+    const csv = convertMatchesToCSV(groupedMatches[expandedWeek]);
+    downloadCSV(csv, `${expandedWeek}_matches_${new Date().toISOString().slice(0, 10)}.csv`);
+  };
+
+  // Download current week image
+  const downloadWeekMatchesImage = () => {
+    if (!weekTableRef.current) return;
+    html2canvas(weekTableRef.current).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `${expandedWeek}_matches_${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  };
+
   return (
-    <div style={{ padding: '1rem', maxWidth: '800px', margin: 'auto' }}>
+    <div className="matchlist-container">
+
+      {/* Week select dropdown */}
       {weekKeys.length > 0 && (
         <select
           value={expandedWeek}
           onChange={handleWeekChange}
-          style={{
-            marginBottom: '1rem',
-            padding: '0.5rem',
-            fontSize: '1rem',
-            borderRadius: '6px',
-            border: '1px solid #ccc'
-          }}
+          className="matchlist-week-select"
         >
           {weekKeys.map((wk) => (
             <option key={wk} value={wk}>{wk}</option>
@@ -110,48 +169,49 @@ const MatchList = () => {
         </select>
       )}
 
-      {expandedWeek && groupedMatches[expandedWeek] && (
-        <div style={{
-          background: '#fff',
-          borderRadius: '8px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          padding: '1rem'
-        }}>
-          <h3 style={{
-            borderBottom: '2px solid #007BFF',
-            paddingBottom: '0.4rem',
-            marginBottom: '1rem',
-            color: '#007BFF'
-          }}>
-            {expandedWeek} Results
-          </h3>
+      {/* Full matches table (hidden for image capture) */}
+      <div ref={fullTableRef} style={{ display: 'none' }}>
+        <h2>All Matches Results</h2>
+        {matches.map(match => (
+          <div key={match._id} className="match-row">
+            <span className="team-name">{match.teamA}</span>
+            <span className="score">{match.goalsA} - {match.goalsB}</span>
+            <span className="team-name" style={{ textAlign: 'right' }}>{match.teamB}</span>
+            <span className="match-date">{new Date(match.date).toLocaleDateString()}</span>
+          </div>
+        ))}
+      </div>
 
-          {groupedMatches[expandedWeek].map((match) => (
-            <div
-              key={match._id}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto 1fr auto',
-                alignItems: 'center',
-                padding: '0.6rem 0.8rem',
-                background: '#f9f9f9',
-                borderRadius: '6px',
-                border: '1px solid #eee',
-                marginBottom: '0.5rem'
-              }}
-            >
-              <span style={{ fontWeight: 500 }}>{match.teamA}</span>
-              <span style={{ fontWeight: 'bold', textAlign: 'center' }}>
-                {match.goalsA} - {match.goalsB}
-              </span>
-              <span style={{ fontWeight: 500, textAlign: 'right' }}>{match.teamB}</span>
-              <span style={{ fontSize: '0.85rem', color: '#777', textAlign: 'right' }}>
-                {new Date(match.date).toLocaleDateString()}
-              </span>
+      {/* Current week matches */}
+      {expandedWeek && groupedMatches[expandedWeek] && (
+        <div className="week-card" ref={weekTableRef}>
+          <h3 className="week-title">{expandedWeek} Results</h3>
+          {groupedMatches[expandedWeek].map(match => (
+            <div key={match._id} className="match-row">
+              <span className="team-name">{match.teamA}</span>
+              <span className="score">{match.goalsA} - {match.goalsB}</span>
+              <span className="team-name" style={{ textAlign: 'right' }}>{match.teamB}</span>
+              <span className="match-date">{new Date(match.date).toLocaleDateString()}</span>
             </div>
           ))}
         </div>
       )}
+
+      {/* Download buttons */}
+      <div className="download-buttons">
+        <div>
+          <button onClick={downloadFullMatchesCSV}>Download All Matches CSV</button>
+          <button onClick={downloadFullMatchesImage}>Download All Matches Image</button>
+        </div>
+        <div>
+          <button onClick={downloadWeekMatchesCSV} disabled={!expandedWeek}>
+            Download {expandedWeek} CSV
+          </button>
+          <button onClick={downloadWeekMatchesImage} disabled={!expandedWeek}>
+            Download {expandedWeek} Image
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
