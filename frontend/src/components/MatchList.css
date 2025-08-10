@@ -106,3 +106,33 @@
 .remove-bulk-btn:hover {
   color: #555; /* subtle dark gray on hover */
 }
+/* Bulk date input container */
+.bulk-date-container {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Bulk date label */
+.bulk-date-container label {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Bulk date input */
+.bulk-date-container input[type="date"] {
+  padding: 6px 10px;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  max-width: 180px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.bulk-date-container input[type="date"]:focus {
+  border-color: #007BFF;
+  outline: none;
+}

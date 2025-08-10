@@ -49,8 +49,11 @@ const MatchForm = () => {
     teamB: '',
     goalsA: '',
     goalsB: '',
-    dayPlayed: '',
+    dayPlayed: '', // used only in single mode for input
   });
+
+  // NEW: single bulk date for all bulk matches (default today)
+  const [bulkDate, setBulkDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -87,9 +90,16 @@ const MatchForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Bulk date change handler: updates bulkDate AND updates all bulkMatches dates to match
+  const handleBulkDateChange = (e) => {
+    const newDate = e.target.value;
+    setBulkDate(newDate);
+    setBulkMatches(prev => prev.map(m => ({ ...m, date: newDate })));
+  };
+
   const handleAddToBulk = () => {
-    const { teamA, teamB, goalsA, goalsB, dayPlayed } = formData;
-    const matchDate = dayPlayed || new Date().toISOString().split('T')[0];
+    const { teamA, teamB, goalsA, goalsB } = formData; // no dayPlayed here, use bulkDate
+    const matchDate = bulkDate;
 
     if (!teamA || !teamB || goalsA === '' || goalsB === '') {
       return setError('❌ Please fill all fields.');
@@ -202,26 +212,39 @@ const MatchForm = () => {
       {bulkMode && (
         <div className="card">
           <h3>📝 Bulk Preview</h3>
-          <div className="bulk-list">
-            {bulkMatches.length > 0 ? (
-              bulkMatches.map((m, idx) => (
-                <div key={idx} className="bulk-item">
-                  {m.teamA} {m.goalsA} - {m.goalsB} {m.teamB} ({m.date})
-                  <button
-                    className="remove-bulk-btn"
-                    onClick={() => handleRemoveBulkMatch(idx)}
-                    title="Remove match"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))
-            ) : (
-              <p>No matches added yet.</p>
-            )}
+
+          {/* Single shared date input for all bulk matches */}
+          <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <label htmlFor="bulkDate">Date for all matches:</label>
+            <input 
+              id="bulkDate"
+              type="date" 
+              value={bulkDate} 
+              onChange={handleBulkDateChange}
+              required
+            />
           </div>
+
+          {bulkMatches.length > 0 ? (
+            bulkMatches.map((m, idx) => (
+              <div key={idx} className="bulk-item" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>{m.teamA} {m.goalsA} - {m.goalsB} {m.teamB}</span>
+                <button
+                  className="remove-bulk-btn"
+                  onClick={() => handleRemoveBulkMatch(idx)}
+                  title="Remove match"
+                >
+                  ×
+                </button>
+              </div>
+            ))
+          ) : (
+            <p>No matches added yet.</p>
+          )}
           {bulkMatches.length > 0 && (
-            <button className="submit-all" onClick={handleSubmitBulk}>✅ Submit All</button>
+            <button className="submit-all" onClick={handleSubmitBulk}>
+              ✅ Submit All
+            </button>
           )}
         </div>
       )}
@@ -234,6 +257,8 @@ const MatchForm = () => {
             setBulkMode(!bulkMode);
             setMessage('');
             setError('');
+            setBulkMatches([]);
+            setBulkDate(new Date().toISOString().split('T')[0]);
           }}
         >
           {bulkMode ? 'Switch to Single Match Mode' : 'Switch to Bulk Entry Mode'}
@@ -290,13 +315,16 @@ const MatchForm = () => {
               step="1"
             />
 
-            <input
-              type="date"
-              name="dayPlayed"
-              value={formData.dayPlayed}
-              onChange={handleChange}
-              required
-            />
+            {/* Only show dayPlayed input in single mode */}
+            {!bulkMode && (
+              <input
+                type="date"
+                name="dayPlayed"
+                value={formData.dayPlayed}
+                onChange={handleChange}
+                required
+              />
+            )}
           </div>
 
           {!bulkMode ? (
