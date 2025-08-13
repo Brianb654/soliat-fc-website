@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './AdminEditMatch.css';  // external CSS import
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/matches';
 

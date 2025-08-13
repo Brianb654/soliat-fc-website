@@ -1,11 +1,13 @@
+// AdminDashboard.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import MatchForm from './MatchForm'; // ✅ form for creating matches
-import AdminEditMatches from './AdminEditMatches'; // ✅ replaced MatchList with AdminEditMatches
+import MatchForm from './MatchForm';
+import AdminEditMatches from './AdminEditMatches';
+import SeasonList from './SeasonList';
+
 import './AdminDashboard.css';
 import './AdminEditMatch.css';
-
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/admin/create-editor';
 
@@ -16,6 +18,7 @@ const AdminDashboard = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [userRole, setUserRole] = useState('');
+  const [activeTab, setActiveTab] = useState('matches'); // ✅ NEW: Tab state
 
   useEffect(() => {
     const storedRole = localStorage.getItem('role');
@@ -43,11 +46,7 @@ const AdminDashboard = () => {
       const res = await axios.post(
         API_URL,
         { name, email, password },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessage(`✅ Editor "${res.data.user.name}" created successfully!`);
       setName('');
@@ -55,9 +54,7 @@ const AdminDashboard = () => {
       setPassword('');
     } catch (err) {
       console.error('❌ Editor creation error:', err);
-      setMessage(
-        err.response?.data?.message || '❌ Failed to create editor.'
-      );
+      setMessage(err.response?.data?.message || '❌ Failed to create editor.');
     } finally {
       setLoading(false);
     }
@@ -68,48 +65,62 @@ const AdminDashboard = () => {
       <h2>⚙️ Admin Panel</h2>
       <p>Welcome, Admin! You can now manage news, teams, players, league table — and add editors.</p>
 
+      {/* Sidebar links remain unchanged */}
       <ul style={{ listStyle: 'none', padding: 0, marginTop: '2rem' }}>
-        <li style={{ marginBottom: '10px' }}>
-          <Link to="/admin/news">📰 Manage News</Link>
-        </li>
-        <li style={{ marginBottom: '10px' }}>
-          <Link to="/admin/matches">⚽ Manage Matches</Link>
-        </li>
-        <li style={{ marginBottom: '10px' }}>
-          <Link to="/admin/players">👥 Manage Players</Link>
-        </li>
-        <li style={{ marginBottom: '10px' }}>
-          <Link to="/admin/table">🏆 Update League Table</Link>
-        </li>
-        <li style={{ marginBottom: '10px' }}>
-          <Link to="/admin/users">👥 View All Users</Link>
-        </li>
+        <li><Link to="/admin/news">📰 Manage News</Link></li>
+        <li><Link to="/admin/matches">⚽ Manage Matches</Link></li>
+        <li><Link to="/admin/players">👥 Manage Players</Link></li>
+        <li><Link to="/admin/table">🏆 Update League Table</Link></li>
+        <li><Link to="/admin/users">👥 View All Users</Link></li>
+        <li><Link to="/admin/seasons">📅 Manage Seasons</Link></li>
       </ul>
 
-      {/* 👇 Only visible to admin or editor */}
+      {/* ✅ NEW: Tabs inside admin dashboard */}
       {(userRole === 'admin' || userRole === 'editor') && (
         <div style={{ marginTop: '3rem' }}>
-          <h3>📝 Submit Match Result (Update League Table)</h3>
-          <MatchForm />
+          <div className="admin-tabs">
+            <button
+              className={activeTab === 'matches' ? 'active' : ''}
+              onClick={() => setActiveTab('matches')}
+            >
+              ⚽ Matches
+            </button>
+            <button
+              className={activeTab === 'seasons' ? 'active' : ''}
+              onClick={() => setActiveTab('seasons')}
+            >
+              📅 Seasons
+            </button>
+          </div>
 
-          <hr style={{ margin: '3rem 0' }} />
+          {activeTab === 'matches' && (
+            <>
+              <h3>📝 Submit Match Result (Update League Table)</h3>
+              <MatchForm />
 
-          <h3>📋 View & Manage All Matches</h3>
-          <AdminEditMatches /> {/* ✅ updated from MatchList */}
+              <hr style={{ margin: '3rem 0' }} />
+
+              <h3>📋 View & Manage All Matches</h3>
+              <AdminEditMatches />
+            </>
+          )}
+
+          {activeTab === 'seasons' && (
+            <>
+              <h3>📅 Manage Seasons</h3>
+              <SeasonList />
+            </>
+          )}
         </div>
       )}
 
+      {/* Admin-only editor creation */}
       {userRole === 'admin' && (
         <>
           <hr style={{ margin: '2rem 0' }} />
           <h3>➕ Add Editor</h3>
           {message && (
-            <p
-              style={{
-                color: message.startsWith('✅') ? 'green' : 'red',
-                fontWeight: 'bold',
-              }}
-            >
+            <p className={message.startsWith('✅') ? 'success-message' : 'error-message'}>
               {message}
             </p>
           )}

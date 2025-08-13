@@ -1,121 +1,19 @@
-.admin-match-manager {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 24px;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.admin-match-manager h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #333;
-}
-
-.week-section {
-  margin-bottom: 3rem;
-}
-
-.week-section h3 {
-  border-bottom: 2px solid #333;
-  padding-bottom: 4px;
-  margin-bottom: 16px;
-}
-
-.match-item {
-  background: #f9f9f9;
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  transition: background 0.2s ease;
-}
-
-.match-item:hover {
-  background: #f1f1f1;
-}
-
-.match-details {
+.admin-tabs {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-.match-info {
-  font-size: 16px;
-  color: #333;
-}
-
-.match-info strong {
-  color: #555;
-}
-
-.button-group button {
-  margin-left: 8px;
-  padding: 6px 10px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.button-group button:hover {
-  opacity: 0.85;
-}
-
-.button-group button:first-child {
-  background: #3498db;
-  color: white;
-}
-
-.button-group button:last-child {
-  background: #e74c3c;
-  color: white;
-}
-
-.editing-form input[type='text'],
-.editing-form input[type='number'],
-.editing-form input[type='date'] {
-  margin-right: 8px;
-  padding: 6px;
-  font-size: 14px;
+.admin-tabs button {
+  padding: 0.6rem 1.2rem;
   border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.editing-form button {
-  padding: 6px 10px;
-  font-size: 14px;
-  border-radius: 4px;
-  margin-left: 6px;
-  border: none;
+  background: #f5f5f5;
   cursor: pointer;
+  border-radius: 4px;
 }
 
-.editing-form button:first-of-type {
-  background-color: #2ecc71;
-  color: #fff;
-}
-
-.editing-form button:last-of-type {
-  background-color: #bdc3c7;
-  color: #fff;
-}
-
-/* Responsive tweaks */
-@media (max-width: 600px) {
-  .match-details {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .button-group {
-    margin-top: 10px;
-  }
-
-  .editing-form input,
-  .editing-form button {
-    display: block;
-    margin-bottom: 10px;
-    width: 100%;
-  }
+.admin-tabs button.active {
+  background: #800000;
+  color: white;
+  border-color: #800000;
 }

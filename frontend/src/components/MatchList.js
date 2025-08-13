@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react'; 
 import axios from 'axios';
 import html2canvas from 'html2canvas';
-import './MatchList.css'; // Your CSS file
+import './MatchList.css';
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/matches';
 
@@ -42,7 +42,7 @@ const MatchList = () => {
       .catch(err => console.error('Error fetching matches:', err));
   }, []);
 
-  // Group matches by week
+  // Advanced grouping: push matches to next week if team already has match in current week
   const { groupedMatches, weekKeys } = useMemo(() => {
     if (matches.length === 0) return { groupedMatches: {}, weekKeys: [] };
 
@@ -55,24 +55,49 @@ const MatchList = () => {
     const diffToMonday = (day === 0 ? -6 : 1) - day;
     startOfWeekFirst.setDate(startOfWeekFirst.getDate() + diffToMonday);
 
-    const grouped = {};
+    const getWeekKey = (num) => `Week ${num}`;
 
-    for (const match of sortedMatches) {
+    const matchesQueue = [...sortedMatches];
+    const grouped = {};
+    const teamsInWeek = {};
+
+    const ensureWeekData = (weekNum) => {
+      if (!grouped[getWeekKey(weekNum)]) grouped[getWeekKey(weekNum)] = [];
+      if (!teamsInWeek[weekNum]) teamsInWeek[weekNum] = new Set();
+    };
+
+    while (matchesQueue.length > 0) {
+      const match = matchesQueue.shift();
+
       const matchDate = new Date(match.date);
       matchDate.setHours(0, 0, 0, 0);
-
       const diffMs = matchDate - startOfWeekFirst;
       const diffDays = diffMs / (1000 * 60 * 60 * 24);
-      const relativeWeekNumber = Math.floor(diffDays / 7) + 1;
+      let matchWeekNum = Math.floor(diffDays / 7) + 1;
 
-      const weekKey = `Week ${relativeWeekNumber}`;
+      let weekNumToTry = matchWeekNum;
 
-      if (!grouped[weekKey]) grouped[weekKey] = [];
-      grouped[weekKey].push(match);
+      let placed = false;
+      while (!placed) {
+        ensureWeekData(weekNumToTry);
+
+        const teamsThisWeek = teamsInWeek[weekNumToTry];
+        const matchesThisWeek = grouped[getWeekKey(weekNumToTry)];
+
+        if (!teamsThisWeek.has(match.teamA) && !teamsThisWeek.has(match.teamB)) {
+          matchesThisWeek.push(match);
+          teamsThisWeek.add(match.teamA);
+          teamsThisWeek.add(match.teamB);
+          placed = true;
+        } else {
+          weekNumToTry++;
+        }
+      }
     }
 
-    for (const key in grouped) {
-      grouped[key].sort((a, b) => new Date(a.date) - new Date(b.date));
+    // Sort matches inside each week by date ascending
+    for (const wk in grouped) {
+      grouped[wk].sort((a, b) => new Date(a.date) - new Date(b.date));
     }
 
     const sortedWeekKeys = Object.keys(grouped).sort((a, b) => {
@@ -92,7 +117,7 @@ const MatchList = () => {
 
   const handleWeekChange = (e) => setExpandedWeek(e.target.value);
 
-  // -- DOWNLOAD FUNCTIONS (defined inside component) --
+  // CSV and Image download functions below remain unchanged...
 
   // Converts matches array to CSV string
   const convertMatchesToCSV = (matches) => {
@@ -107,7 +132,6 @@ const MatchList = () => {
     return [headers, ...rows].map(r => r.join(',')).join('\n');
   };
 
-  // Trigger CSV download helper
   const downloadCSV = (csvString, filename) => {
     const blob = new Blob([csvString], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -118,13 +142,11 @@ const MatchList = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Download all matches CSV
   const downloadFullMatchesCSV = () => {
     const csv = convertMatchesToCSV(matches);
     downloadCSV(csv, `all_matches_${new Date().toISOString().slice(0, 10)}.csv`);
   };
 
-  // Download all matches as image
   const downloadFullMatchesImage = () => {
     if (!fullTableRef.current) return;
     html2canvas(fullTableRef.current).then(canvas => {
@@ -135,14 +157,12 @@ const MatchList = () => {
     });
   };
 
-  // Download current week CSV
   const downloadWeekMatchesCSV = () => {
     if (!expandedWeek || !groupedMatches[expandedWeek]) return;
     const csv = convertMatchesToCSV(groupedMatches[expandedWeek]);
     downloadCSV(csv, `${expandedWeek}_matches_${new Date().toISOString().slice(0, 10)}.csv`);
   };
 
-  // Download current week image
   const downloadWeekMatchesImage = () => {
     if (!weekTableRef.current) return;
     html2canvas(weekTableRef.current).then(canvas => {

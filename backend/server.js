@@ -50,12 +50,10 @@ app.use(express.json());
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB Atlas'))
   .catch((err) => console.error('❌ MongoDB connection error:', err));
-
   
- app.get('/', (req, res) => {
+app.get('/', (req, res) => {
   res.send('API is running...');
 });
- 
 
 // Require routes
 const teamRoutes = require('./routes/teamRoutes');
@@ -64,6 +62,10 @@ const newsRoutes = require('./routes/newsRoutes');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
+// New routes for seasons
+const seasonRoutes = require('./routes/seasonRoutes');
+const seasonWeekRoutes = require('./routes/seasonWeekRoutes');
+
 // Use routes
 app.use('/api/teams', teamRoutes);
 app.use('/api/matches', matchRoutes);
@@ -71,13 +73,15 @@ app.use('/api/news', newsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 
+app.use('/api/seasons', seasonRoutes);
+app.use('/api/seasonweeks', seasonWeekRoutes);
+
 // 404 fallback and error handler here...
 
 const PORT = process.env.PORT || 5000;
 const localIP = getLocalIP();
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running!`);
-  console.log(`- Local:   http://localhost:${PORT}`);
-  console.log(`- On LAN:  http://${localIP}:${PORT}`);
+  console.log(`🚀 Server is running!`) ;
+  
 });
