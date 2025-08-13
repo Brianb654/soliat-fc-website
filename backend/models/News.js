@@ -8,4 +8,7 @@ const newsSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now }
 }, { timestamps: true });
 
+// ✅ Add index for faster sorting & pagination
+newsSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('News', newsSchema);

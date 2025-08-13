@@ -3,19 +3,22 @@ const router = express.Router();
 const News = require('../models/News');
 const { protect, isEditorOrAdmin, isAdmin } = require('../middleware/authMiddleware');
 
-// ✅ GET all news (paginated)
+// ✅ GET all news (paginated, optimized)
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const newsList = await News.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    const total = await News.countDocuments();
+    // Run both queries in parallel + use lean() for faster reads
+    const [newsList, total] = await Promise.all([
+      News.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      News.countDocuments()
+    ]);
 
     res.json({
       news: newsList,

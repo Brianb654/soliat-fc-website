@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
     const teams = await Team.find().sort({ points: -1, goalDifference: -1 });
     res.json(teams);
   } catch (error) {
-    console.error('❌ Error fetching teams:', error.message);
+    console.error('❌ Error fetching teams:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -22,40 +22,43 @@ router.post('/', async (req, res) => {
       const teams = await Team.insertMany(data);
       res.json(teams);
     } else {
+      if (!data.name) {
+        return res.status(400).json({ message: 'Team name is required' });
+      }
       const team = new Team({ name: data.name });
       await team.save();
       res.json(team);
     }
   } catch (error) {
-    console.error('❌ Error adding team(s):', error.message);
+    console.error('❌ Error adding team(s):', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// 🔁 POST /api/teams/rebuild — Rebuild league table after match deletion or reset
+// 🔁 POST /api/teams/rebuild — Rebuild league table
 router.post('/rebuild', async (req, res) => {
   try {
     // 1. Reset all teams
-    const allTeams = await Team.find();
-    for (const team of allTeams) {
-      team.points = 0;
-      team.goalsFor = 0;
-      team.goalsAgainst = 0;
-      team.goalDifference = 0;
-      team.matchesPlayed = 0;
-      team.wins = 0;
-      team.draws = 0;
-      team.losses = 0;
-      await team.save();
-    }
+    await Team.updateMany({}, {
+      $set: {
+        points: 0,
+        goalsFor: 0,
+        goalsAgainst: 0,
+        goalDifference: 0,
+        matchesPlayed: 0,
+        wins: 0,
+        draws: 0,
+        losses: 0
+      }
+    });
 
-    // 2. Recalculate stats from all matches
+    // 2. Recalculate stats from matches
     const matches = await Match.find();
     for (const match of matches) {
       const { teamA, teamB, goalsA, goalsB } = match;
 
-      const teamAData = await Team.findOne({ name: { $regex: new RegExp(`^${teamA}$`, 'i') } });
-      const teamBData = await Team.findOne({ name: { $regex: new RegExp(`^${teamB}$`, 'i') } });
+      const teamAData = await Team.findOne({ name: new RegExp(`^${teamA}$`, 'i') });
+      const teamBData = await Team.findOne({ name: new RegExp(`^${teamB}$`, 'i') });
 
       if (!teamAData || !teamBData) continue;
 
@@ -94,7 +97,7 @@ router.post('/rebuild', async (req, res) => {
 
     res.json({ message: '✅ League table rebuilt successfully.' });
   } catch (err) {
-    console.error('❌ Error rebuilding table:', err.message);
+    console.error('❌ Error rebuilding table:', err);
     res.status(500).json({ message: 'Server error during rebuild' });
   }
 });
