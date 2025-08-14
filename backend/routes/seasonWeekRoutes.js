@@ -54,6 +54,17 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// RESTful route: Get all weeks for a specific season
+router.get('/season/:seasonId/weeks', async (req, res) => {
+  try {
+    const weeks = await SeasonWeek.find({ seasonId: req.params.seasonId }).sort({ weekNumber: 1 });
+    res.json(weeks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Update week by id
 router.put('/:id', async (req, res) => {
   try {

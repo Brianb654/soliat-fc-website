@@ -21,7 +21,11 @@ import EditorDashboard from './components/EditorDashboard';
 import AdminUsers from './components/AdminUsers';
 import CreateEditorPage from './components/CreateEditorPage';
 import UpdateLeagueTable from './components/UpdateLeagueTable';
-import AdminEditMatches from './components/AdminEditMatches'; // ✅ ADDED
+import AdminEditMatches from './components/AdminEditMatches';
+import AdminSeasons from './components/AdminSeasons';
+import SeasonList from './components/SeasonList';
+import AdminSeasonWeeks from './components/AdminSeasonWeeks'; // Combined list + form
+import SeasonForm from './components/SeasonForm';
 
 import './App.css';
 
@@ -145,10 +149,34 @@ function App() {
             }
           />
           <Route
-            path="/admin/matches" // ✅ NEW MATCH ROUTE
+            path="/admin/matches"
             element={
               <ProtectedRoute allowedRoles={['admin', 'editor']}>
                 <AdminEditMatches />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/seasons"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'editor']}>
+                <AdminSeasons />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/add-season"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'editor']}>
+                <SeasonForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/season-weeks"
+            element={
+              <ProtectedRoute allowedRoles={['admin', 'editor']}>
+                <AdminSeasonWeeks />
               </ProtectedRoute>
             }
           />

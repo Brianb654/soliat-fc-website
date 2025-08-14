@@ -1,73 +1,59 @@
 import React, { useEffect, useState } from 'react';
-import SeasonWeekForm from './SeasonWeekForm';
+import axios from 'axios';
+import { API_BASE_URL } from '../App';
 
-const API_URL = 'https://soliat-fc-website.onrender.com/api/seasonweeks';
-
-function SeasonWeekList({ seasonId }) {
+const SeasonWeekList = ({ seasonId }) => {
   const [weeks, setWeeks] = useState([]);
-  const [editingWeek, setEditingWeek] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // ✅ Fetch weeks for the selected season using RESTful route
   const fetchWeeks = async () => {
-    setLoading(true);
     try {
-      const url = seasonId ? `${API_URL}?seasonId=${seasonId}` : API_URL;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to fetch season weeks');
-      const data = await res.json();
-      setWeeks(data);
+      setLoading(true);
+      const res = await axios.get(`${API_BASE_URL}/api/season/${seasonId}/weeks`);
+      setWeeks(res.data);
     } catch (err) {
-      setError(err.message);
+      console.error(err);
+      setError('Failed to fetch season weeks');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
-    fetchWeeks();
+    if (seasonId) {
+      fetchWeeks();
+    }
   }, [seasonId]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (weekId) => {
     if (!window.confirm('Are you sure you want to delete this week?')) return;
 
     try {
-      const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete week');
-      setWeeks(weeks.filter((w) => w._id !== id));
+      await axios.delete(`${API_BASE_URL}/season-weeks/${weekId}`);
+      setWeeks(weeks.filter((w) => w._id !== weekId));
     } catch (err) {
-      alert(err.message);
+      alert('Failed to delete week');
     }
   };
 
-  const handleFormSuccess = (week) => {
-    if (editingWeek) {
-      setWeeks(weeks.map(w => (w._id === week._id ? week : w)));
-      setEditingWeek(null);
-    } else {
-      setWeeks([...weeks, week]);
-    }
-  };
+  if (!seasonId) return <p>Please select a season to see its weeks.</p>;
+  if (loading) return <p>Loading weeks...</p>;
+  if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
     <div className="season-week-list-container">
-      <SeasonWeekForm onSuccess={handleFormSuccess} existingWeek={editingWeek} seasonId={seasonId} />
-
-      <h2>Season Weeks</h2>
-      {loading && <p>Loading weeks...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
       <ul>
         {weeks.map((week) => (
           <li key={week._id}>
-            Week {week.weekNumber} | {week.startDate && new Date(week.startDate).toLocaleDateString()} - {week.endDate && new Date(week.endDate).toLocaleDateString()}
-            <button onClick={() => setEditingWeek(week)}>Edit</button>
+            <strong>{week.name}</strong> | {new Date(week.startDate).toLocaleDateString()} - {new Date(week.endDate).toLocaleDateString()}
             <button onClick={() => handleDelete(week._id)}>Delete</button>
           </li>
         ))}
       </ul>
     </div>
   );
-}
+};
 
 export default SeasonWeekList;
-
-

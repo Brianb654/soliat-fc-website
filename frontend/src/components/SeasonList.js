@@ -3,7 +3,7 @@ import SeasonForm from './SeasonForm';
 
 const API_URL = 'https://soliat-fc-website.onrender.com/api/seasons';
 
-function SeasonList() {
+function SeasonList({ onSelectSeason }) {
   const [seasons, setSeasons] = useState([]);
   const [editingSeason, setEditingSeason] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ function SeasonList() {
   const handleFormSuccess = (season) => {
     if (editingSeason) {
       // update existing season in list
-      setSeasons(seasons.map(s => (s._id === season._id ? season : s)));
+      setSeasons(seasons.map((s) => (s._id === season._id ? season : s)));
       setEditingSeason(null);
     } else {
       // add new season
@@ -51,17 +51,23 @@ function SeasonList() {
 
   return (
     <div className="season-list-container">
+      {/* Season Form */}
       <SeasonForm onSuccess={handleFormSuccess} existingSeason={editingSeason} />
 
       <h2>Seasons</h2>
       {loading && <p>Loading seasons...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
+
       <ul>
         {seasons.map((season) => (
           <li key={season._id}>
             <strong>{season.name}</strong> | {new Date(season.startDate).toLocaleDateString()} - {new Date(season.endDate).toLocaleDateString()}
             <button onClick={() => setEditingSeason(season)}>Edit</button>
             <button onClick={() => handleDelete(season._id)}>Delete</button>
+            {/* Select button to choose season and show its weeks */}
+            {onSelectSeason && (
+              <button onClick={() => onSelectSeason(season)}>Select</button>
+            )}
           </li>
         ))}
       </ul>
